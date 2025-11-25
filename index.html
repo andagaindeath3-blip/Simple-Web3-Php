@@ -1,163 +1,159 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethereum Token Creator | ERC-20 Мастер</title>
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
-    <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-    <style>
-        :root {
-            --primary-color: #627EEA; /* Цвет Ethereum */
-            --secondary-color: #38a169; /* Цвет успеха */
-            --bg-color: #f7f9fc;
-            --text-color: #333;
-            --card-bg: white;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 550px;
-            width: 100%;
-            background: var(--card-bg);
-            padding: 30px 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 30px;
-            font-size: 1.8em;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 0.95em;
-        }
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
-        }
-        input:focus {
-            border-color: var(--primary-color);
-            outline: none;
-        }
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 15px;
-            transition: background-color 0.3s, opacity 0.3s;
-        }
-        #connect-btn {
-            background-color: var(--primary-color);
-            color: white;
-            margin-bottom: 20px;
-        }
-        #deploy-btn {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-        .btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        #status-area {
-            margin-top: 25px;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #e6e9f2;
-            border-left: 5px solid var(--primary-color);
-            font-size: 0.9em;
-            line-height: 1.5;
-        }
-        .wallet-status {
-            text-align: center;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: #e8f5e9;
-            color: var(--secondary-color);
-            font-weight: bold;
-            margin-bottom: 20px;
-            border: 1px solid var(--secondary-color);
-        }
-        .wallet-status.disconnected {
-            background-color: #fbecec;
-            color: #c0392b;
-            border: 1px solid #c0392b;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EtherPad — Launch ERC20 Token on Ethereum</title>
+  <meta name="description" content="Создай ERC20-токен на Ethereum за 30 секунд • Комиссия 2-5% на твой кошелёк" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛓️</text></svg>">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card: #1a1a2e;
+      --accent: #6366f1; /* Ethereum purple */
+      --text: #e0e0ff;
+      --text-light: #a0a0cc;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(99,102,241,0.15) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(99,102,241,0.15) 0%, transparent 20%);
+    }
+    header {
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 4rem;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 2rem;
+      margin: 2rem 0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(99,102,241,0.2);
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 1rem;
+      margin: 0.8rem 0;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+    }
+    input, textarea {
+      background: rgba(255,255,255,0.05);
+      color: white;
+      border: 1px solid rgba(99,102,241,0.3);
+    }
+    input::placeholder, textarea::placeholder { color: #777; }
+    button {
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(99,102,241,0.4); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .connect-wallet {
+      background: transparent;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .stat {
+      background: rgba(99,102,241,0.1);
+      padding: 1.5rem;
+      border-radius: 16px;
+      text-align: center;
+    }
+    .stat h3 { font-size: 2rem; color: var(--accent); }
+    footer { text-align:center; padding: 3rem; color: #555; font-size: 0.9rem; }
+    #status { margin-top:1rem; font-weight:600; }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Создание ERC-20 Токена (ETH) ✨</h1>
-        
-        <div class="wallet-status disconnected" id="wallet-status">
-            🔴 Кошелек не подключен. 
-        </div>
+  <header>
+    <h1>ETHERPAD</h1>
+    <p>Создай ERC20-токен за 30 секунд • Интеграция с Simple-Web3-Php бэкендом</p>
+  </header>
 
-        <button class="btn" id="connect-btn">
-            Подключить кошелек (WalletConnect / MetaMask)
-        </button>
+  <div class="container">
 
-        <form id="token-form">
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-            <h2>Параметры Токена</h2>
-
-            <div class="form-group">
-                <label for="name">Название Токена (Name, напр. "MetaCoin")</label>
-                <input type="text" id="name" required placeholder="Введите полное название" value="MyToken">
-            </div>
-
-            <div class="form-group">
-                <label for="symbol">Символ (Symbol, напр. "MTC")</label>
-                <input type="text" id="symbol" required placeholder="Введите короткий символ (3-5 букв)" value="MTK">
-            </div>
-
-            <div class="form-group">
-                <label for="supply">Общее предложение (Total Supply)</label>
-                <input type="number" id="supply" required min="1" placeholder="Напр. 1000000" value="1000000">
-            </div>
-            
-            <div class="form-group">
-                <label for="decimals">Десятичные знаки (Decimals, 18 - стандарт ETH)</label>
-                <input type="number" id="decimals" required min="0" max="18" value="18">
-            </div>
-
-            <button type="submit" class="btn" id="deploy-btn" disabled>
-                🚀 Деплой Токена на Ethereum
-            </button>
-        </form>
-
-        <div id="status-area">
-            Ожидание подключения кошелька...
-        </div>
+    <div class="card">
+      <button id="connectWallet" class="connect-wallet">🔗 Подключить MetaMask</button>
+      <div id="walletAddress"></div>
+      <div id="balance"></div>
     </div>
 
-    <script src="app.js"></script> 
+    <div class="card">
+      <h2 style="margin-bottom:1rem; color:var(--accent)">Запусти свой ERC20-токен ⛓️</h2>
+      
+      <input type="text" id="tokenName" placeholder="Название токена (например: ETHERDOGE)" />
+      <input type="text" id="tokenSymbol" placeholder="Тикер (например: EDOGE)" />
+      <input type="number" id="tokenSupply" placeholder="Общий саплай (например: 1000000000)" value="1000000000" />
+      <input type="text" id="tokenImage" placeholder="Ссылка на картинку (https://...)" />
+      <textarea id="tokenDescription" rows="3" placeholder="Описание (не обязательно)"></textarea>
+      
+      <input type="number" id="feePercent" placeholder="Комиссия с каждой сделки (%)" value="3" min="1" max="10" />
+
+      <button id="createToken">🔥 Создать токен за ~0.01 ETH</button>
+      <div id="status"></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <h3 id="totalTokens">0</h3>
+        <p>Создано токенов</p>
+      </div>
+      <div class="stat">
+        <h3 id="totalVolume">$0</h3>
+        <p>Объём торгов</p>
+      </div>
+      <div class="stat">
+        <h3 id="yourEarnings">0 ETH</h3>
+        <p>Твои комиссии</p>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    EtherPad 2025 — твой Ethereum-клон pump.fun с PHP-бэкендом<br>
+    <span style="color:#6366f1">Готов к бою? Пиши в телегу @твой_ник</span>
+  </footer>
+
+  <!-- MetaMask Integration -->
+  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+
+  <script src="app.js"></script>
 </body>
 </html>
