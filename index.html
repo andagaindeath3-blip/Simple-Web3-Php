@@ -1,244 +1,82 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Crypto Creator Pro — Запусти свою мем-коин за 1 клик</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3@4.3.0/dist/web3.min.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Rajdhani:wght@600&family=Roboto+Mono&display=swap');
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: linear-gradient(135deg, #120321, #240b36, #000);
-      color: #fff;
-      font-family: 'Rajdhani', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="%23ff00ff" opacity="0.1"/></svg>');
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 20px;
-      text-align: center;
-      padding-top: 5vh;
-    }
-
-    h1 {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 4rem;
-      background: linear-gradient(90deg, #ff00ff, #00ffff, #ffff00);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 30px rgba(255,0,255,0.5);
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      font-size: 1.5rem;
-      opacity: 0.9;
-      margin-bottom: 30px;
-    }
-
-    .wallet-connect {
-      margin: 40px 0;
-    }
-
-    #connectWallet {
-      padding: 16px 40px;
-      font-size: 1.3rem;
-      background: linear-gradient(45deg, #7928ca, #ff0080);
-      border: none;
-      border-radius: 50px;
-      color: white;
-      cursor: pointer;
-      box-shadow: 0 0 30px rgba(255,0,255,0.6);
-      transition: all 0.4s;
-    }
-
-    #connectWallet:hover { transform: scale(1.05); }
-
-    #walletAddress {
-      margin-top: 20px;
-      font-family: 'Roboto Mono', monospace;
-      background: rgba(0,0,0,0.5);
-      padding: 12px 20px;
-      border-radius: 10px;
-      display: inline-block;
-      font-size: 1.1rem;
-    }
-
-    .creator-box {
-      background: rgba(255,255,255,0.05);
-      border-radius: 20px;
-      padding: 40px;
-      margin: 40px 0;
-      border: 1px solid rgba(255,0,255,0.3);
-      backdrop-filter: blur(10px);
-    }
-
-    .buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      margin: 40px 0;
-    }
-
-    button.big-btn {
-      padding: 20px 40px;
-      font-size: 1.5rem;
-      font-weight: bold;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      min-width: 280px;
-      transition: all 0.4s;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-
-    .create { background: linear-gradient(45deg, #ff00ff, #00ffff); color: white; }
-    .pump   { background: linear-gradient(45deg, #00ff99, #00ff00); color: black; }
-    .dump   { background: linear-gradient(45deg, #ff3300, #ff6600); color: white; }
-    .rug    { background: linear-gradient(45deg, #8b00ff, #ff1493); color: white; }
-
-    button.big-btn:hover { transform: translateY(-10px) scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.7); }
-
-    .result {
-      margin-top: 40px;
-      padding: 30px;
-      background: rgba(0,0,0,0.6);
-      border-radius: 20px;
-      font-size: 1.8rem;
-      min-height: 120px;
-      border: 2px dashed #ff00ff;
-    }
-
-    .connected {
-      color: #00ff00;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRYPTO CREATOR 2026 — Создай токен с Simple-Web3-Php</title>
+    <meta name="description" content="Деплой ERC-20 токена в любой EVM-сети через PHP. Интеграция с Simple-Web3-Php.">
+    <style>
+        body { font-family: Arial, sans-serif; background: #0a0a0a; color: #fff; padding: 20px; text-align: center; }
+        form { max-width: 500px; margin: 0 auto; background: #1a1a1a; padding: 30px; border-radius: 10px; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 5px; }
+        button { background: #00ff88; color: #000; font-weight: bold; cursor: pointer; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+        .success { background: #00ff88; color: #000; }
+        .error { background: #ff4444; }
+    </style>
 </head>
 <body>
+    <h1>CRYPTO CREATOR</h1>
+    <p>Создай ERC-20 токен в любой сети через Simple-Web3-Php</p>
 
-<div class="container">
-  <h1>CRYPTO CREATOR PRO</h1>
-  <p class="subtitle">Запусти свой $PEPE-клон за 1 клик в 2025 году</p>
+    <form id="tokenForm">
+        <select id="network" required>
+            <option value="ethereum">Ethereum Mainnet</option>
+            <option value="bsc">BNB Smart Chain</option>
+            <option value="polygon">Polygon</option>
+            <option value="arbitrum">Arbitrum</option>
+            <!-- Добавьте больше -->
+        </select>
+        
+        <input type="number" id="supply" placeholder="Initial Supply (e.g., 1000000)" required min="1">
+        
+        <input type="text" id="address" placeholder="Your Wallet Address (0x...)" required>
+        
+        <input type="password" id="privateKey" placeholder="Private Key (0x... — ТЕСТ!)" required>
+        
+        <button type="submit">Создать токен</button>
+    </form>
 
-  <div class="wallet-connect">
-    <button id="connectWallet">Подключить MetaMask / Wallet</button>
-    <div id="walletAddress"></div>
-  </div>
+    <div id="result"></div>
 
-  <div class="creator-box" id="creatorSection" style="display:none;">
-    <h2>Ты вошёл в матрицу. Теперь создавай.</h2>
-
-    <div class="buttons">
-      <button class="big-btn create" id="createCoin">ЗАПУСТИТЬ СВОЮ МОНЕТУ</button>
-      <button class="big-btn pump" id="pump">PUMP IT TO THE MOON</button>
-      <button class="big-btn dump" id="dump">DUMP НА 99.9%</button>
-      <button class="big-btn rug" id="rug">RUG PULL (18+)</button>
-    </div>
-
-    <div class="result" id="result">
-      Подключи кошелёк → нажми кнопку → стань миллиардером
-    </div>
-  </div>
-</div>
-
-<script>
-  const connectBtn = document.getElementById("connectWallet");
-  const walletAddr = document.getElementById("walletAddress");
-  const creatorSection = document.getElementById("creatorSection");
-  const result = document.getElementById("result");
-
-  let userAddress = null;
-
-  // Подключение кошелька
-  connectBtn.onclick = async () => {
-    if (typeof window.ethereum !== 'undefined') {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        userAddress = accounts[0];
-        walletAddr.textContent = "Подключено: " + userAddress.slice(0,6) + "..." + userAddress.slice(-4);
-        walletAddr.classList.add("connected");
-        creatorSection.style.display = "block";
-        connectBtn.textContent = "Кошелёк подключён";
-        connectBtn.disabled = true;
-        result.textContent = "Добро пожаловать, " + userAddress.slice(0,10) + "... Готов создать историю?";
-      } catch (err) {
-        alert("Не удалось подключить кошелёк 😢");
-      }
-    } else {
-      alert("Установи MetaMask или другой Web3-кошелёк!");
-    }
-  };
-
-  const memes = ["GROK", "ELON", "TRUMP", "PEPE", "WOJAK", "CHAD", "VITALIK", "SATOCHI", "DOGE", "SHIB", "FROG", "CAT", "MOON", "REKT", "BAG", "HODL", "FOMO", "RUG", "PAMP", "XAI"];
-  const endings = ["COIN", "TOKEN", "MOON", "6900", "420", "INFINITE", "AI", "QUANTUM", "NANO", "MEGA", "ULTRA", "KING", "QUEEN", "LORD", "WIFE", "HUSBAND"];
-
-  document.getElementById("createCoin").onclick = () => {
-    const name = memes[Math.floor(Math.random()*memes.length)] + endings[Math.floor(Math.random()*endings.length)];
-    const ticker = "$" + name.substring(0,5).toUpperCase();
-    const supply = ["1,000,000,000", "69,420,000,000", "420,690,000,000", "1,000,000,000,000"][Math.floor(Math.random()*4)];
-
-    result.innerHTML = `
-      <div style="animation: bounce 0.8s;">🎉🎉🎉<br>
-      Ты только что создал:<br><br>
-      <span style="font-size:2.5rem; color:#00ffff;">${name}</span><br>
-      <span style="font-size:3rem; color:#ff00ff;">${ticker}</span><br><br>
-      Общий запас: ${supply} токенов<br>
-      Ликвидность добавлена на Uniswap<br>
-      Уже на CoinGecko и CoinMarketCap!<br><br>
-      <b>Твоё состояние: $0 → $1,337,420,690</b>
-      </div>
-    `;
-    confettiRain();
-  };
-
-  document.getElementById("pump").onclick = () => {
-    result.innerHTML = "🚀 +99999% за 10 минут!<br>Ты в топ-10 CoinMarketCap!<br>Elon Musk уже твитнул про тебя!";
-    confettiRain();
-  };
-
-  document.getElementById("dump").onclick = () => {
-    result.innerHTML = "💥 -99.99% за 4 секунды<br>Чарт стал ровной линией<br>Добро пожаловать в клуб багхолдеров 😭";
-  };
-
-  document.getElementById("rug").onclick = () => {
-    result.innerHTML = "🧹 RUG PULL УСПЕШНО ВЫПОЛНЕН!<br>Ликвидность выведена в Дубай<br>Ты теперь анонимен на Солане<br>Поздравляю, легаси достигнуто ✅";
-  };
-
-  // Конфетти
-  function confettiRain() {
-    for(let i = 0; i < 150; i++) {
-      const c = document.createElement("div");
-      c.style.position = "fixed";
-      c.style.left = Math.random() * 100 + "vw";
-      c.style.top = "-10px";
-      c.style.width = "12px";
-      c.style.height = "12px";
-      c.style.background = ["#ff00ff","#00ffff","#ffff00","#00ff00","#ff0066"][Math.floor(Math.random()*5)];
-      c.style.borderRadius = Math.random() > 0.5 ? "50%" : "0";
-      c.style.transform = `rotate(${Math.random()*360}deg)`;
-      c.style.pointerEvents = "none";
-      c.style.zIndex = "9999";
-      c.style.animation = "fall 4s linear forwards";
-      document.body.appendChild(c);
-      setTimeout(() => c.remove(), 4000);
-    }
-  }
-
-  // Анимации
-  const style = document.createElement("style");
-  style.innerHTML = `
-    @keyframes fall { to { transform: translateY(110vh) rotate(1080deg); opacity: 0; } }
-    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
-  `;
-  document.head.appendChild(style);
-</script>
+    <script>
+        document.getElementById('tokenForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                network: document.getElementById('network').value,
+                supply: document.getElementById('supply').value,
+                address: document.getElementById('address').value,
+                privateKey: document.getElementById('privateKey').value
+            };
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Создаём токен...';
+            resultDiv.className = '';
+            
+            try {
+                const res = await fetch('/api/create.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <h3>✅ Успех!</h3>
+                        <p>Tx Hash: <a href="\( {data.explorer}" target="_blank"> \){data.txHash}</a></p>
+                        <p>Contract Address: ${data.contractAddress}</p>
+                    `;
+                    resultDiv.className = 'success';
+                } else {
+                    resultDiv.innerHTML = `<h3>❌ Ошибка: ${data.error}</h3>`;
+                    resultDiv.className = 'error';
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<h3>❌ Network Error: ${err.message}</h3>`;
+                resultDiv.className = 'error';
+            }
+        });
+    </script>
 </body>
 </html>
