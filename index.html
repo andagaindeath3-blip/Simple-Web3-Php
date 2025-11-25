@@ -57,4 +57,159 @@
             font-size: 1.3rem;
             font-weight: bold;
             cursor: pointer;
-            transition: all
+            transition: all 0.3s;
+        }
+        #connectBtn {
+            background: linear-gradient(45deg, #ff00aa, #00ffff);
+            color: white;
+        }
+        #createBtn {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            color: black;
+        }
+        button:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,255,255,0.4); }
+        button:disabled { background: #555; cursor: not-allowed; transform: none; }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(0,255,0,0.2);
+            display: none;
+        }
+        .error { background: rgba(255,0,0,0.3); }
+        .loader { display: none; margin: 20px 0; }
+        .loader::after {
+            content: '';
+            display: inline-block;
+            width: 30px; height: 30px;
+            border: 4px solid #00ffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>CRYPTO CREATOR</h1>
+    <p>Создай свой ERC-20 токен за 30 секунд</p>
+
+    <button id="connectBtn">Подключить MetaMask / Trust Wallet</button>
+    <div id="accountStatus" style="margin:15px 0; font-weight:bold;"></div>
+
+    <input type="text" id="tokenName" placeholder="Название токена" value="MyAwesomeToken">
+    <input type="text" id="tokenSymbol" placeholder="Символ (MAX)" value="MAX" maxlength="10">
+    <input type="number" id="tokenSupply" placeholder="Общий объём" value="1000000">
+    <select id="tokenDecimals">
+        <option value="18">18 decimals (как ETH)</option>
+        <option value="9">9 decimals (как USDT)</option>
+        <option value="6">6 decimals (как USDC)</option>
+    </select>
+
+    <div class="loader" id="loader"></div>
+    <button id="createBtn" disabled>СОЗДАТЬ ТОКЕН</button>
+
+    <div class="status" id="result"></div>
+</div>
+
+<script>
+// Проверяем, есть ли MetaMask
+let web3;
+let userAccount;
+
+async function connectWallet() {
+    if (typeof window.ethereum === 'undefined') {
+        alert('MetaMask не найден! Установи его: https://metamask.io');
+        return;
+    }
+
+    try {
+        // Запрашиваем доступ к аккаунту
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        userAccount = accounts[0];
+
+        web3 = new Web3(window.ethereum);
+
+        // Показываем адрес
+        document.getElementById('accountStatus').innerHTML = 
+            `Подключено: \( {userAccount.substring(0, 6)}... \){userAccount.substring(38)}`;
+        document.getElementById('connectBtn').textContent = 'Подключено!';
+        document.getElementById('connectBtn').disabled = true;
+        document.getElementById('createBtn').disabled = false;
+
+    } catch (error) {
+        console.error(error);
+        document.getElementById('accountStatus').innerHTML = 
+            '<span style="color:#ff0066">Ошибка подключения</span>';
+    }
+}
+
+// Обработчик кнопки "Подключить кошелёк"
+document.getElementById('connectBtn').addEventListener('click', connectWallet);
+
+// Обработчик кнопки "Создать токен"
+document.getElementById('createBtn').addEventListener('click', async () => {
+    if (!userAccount) {
+        alert('Сначала подключи кошелёк!');
+        return;
+    }
+
+    const name = document.getElementById('tokenName').value.trim();
+    const symbol = document.getElementById('tokenSymbol').value.trim().toUpperCase();
+    const supply = document.getElementById('tokenSupply').value;
+    const decimals = document.getElementById('tokenDecimals').value;
+
+    if (!name || !symbol || !supply) {
+        alert('Заполни все поля!');
+        return;
+    }
+
+    const btn = document.getElementById('createBtn');
+    const loader = document.getElementById('loader');
+    const result = document.getElementByIdUnsupported('result');
+
+    btn.disabled = true;
+    loader.style.display = 'block';
+    result.style.display = 'none';
+
+    // Здесь можно отправить данные на PHP (deploy.php) через fetch
+    // А пока — имитация создания токена
+    setTimeout(() => {
+        loader.style.display = 'none';
+        result.style.display = 'block';
+        result.className = 'status';
+        result.innerHTML = `
+            <h3>ТОКЕН УСПЕШНО СОЗДАН!</h3>
+            <strong>\( {name} ( \){symbol})</strong><br><br>
+            Адрес контракта:<br>
+            <code>0x742d35Cc6634C0532925a3b8D4C9F2a...</code><br><br>
+            <a href="https://sepolia.etherscan.io/address/0x742d35Cc6634C0532925a3b8D4C9F2a" target="_blank" style="color:#00ffff;">
+                Посмотреть на Etherscan
+            </a>
+        `;
+        btn.disabled = false;
+    }, 3000);
+});
+
+// Автоподключение, если уже авторизованы
+window.addEventListener('load', async () => {
+    if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+        const accounts = await web3.eth.getAccounts();
+        if (accounts.length > 0) {
+            userAccount = accounts[0];
+            document.getElementById('accountStatus').innerHTML = 
+                `Подключено: \( {userAccount.substring(0, 6)}... \){userAccount.substring(38)}`;
+            document.getElementById('connectBtn').textContent = 'Подключено';
+            document.getElementById('connectBtn').disabled = true;
+            document.getElementById('createBtn').disabled = false;
+        }
+    }
+});
+</script>
+
+</body>
+</html>
