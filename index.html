@@ -3,17 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRYPTO CREATOR 2025 — Создай токен за 30 сек</title>
+    <title>CRYPTO CREATOR × Simple-Web3-Php</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@4.3.0/dist/web3.min.js"></script>
-    <script src="https://cdn.ethers.io/lib/ethers-6.13.umd.min.js"></script>
     <style>
         :root {
-            --bg: #0d0022;
-            --card: rgba(20, 10, 60, 0.7);
-            --primary: #00eeff;
+            --bg: #0a001f;
+            --card: rgba(20, 10, 60, 0.85);
+            --primary: #00ffff;
             --accent: #ff00ff;
-            --glow: 0 0 30px #00eeff, 0 0 60px #ff00ff;
+            --glow: 0 0 30px #00ffff, 0 0 60px #ff00ff;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            background: var(--bg) url('https://i.ibb.co/4pQ7gRj/stars-bg
+            background: var(--bg) url('https://i.ibb.co/4pQ7gRj/stars-bg.jpg') fixed;
+            background-size: cover;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .container {
+            background: var(--card);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0,255,255,0.4);
+            border-radius: 30px;
+            padding: 50px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: var(--glow);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(from 0deg at 50% 50%, transparent, #00ffff, #ff00ff, transparent);
+            animation: spin 15s linear infinite;
+            opacity: 0.1;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        h1 {
+            font-size: 3.2rem;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: var(--glow);
+        }
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 18px;
+            margin: 12px 0;
+            border-radius: 15px;
+            border: 2px solid rgba(0,255,255,0.5);
+            background: rgba(10,10,40,0.8);
+            color: white;
+            font-size: 1.1rem;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: var(--glow);
+        }
+
+        button {
+            width: 100%;
+            padding: 20px;
+            margin: 20px 0;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.4s;
+        }
+        #connectBtn {
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            color: white;
+        }
+        #createBtn {
+            background: linear-gradient(45deg, #00ffff, #00ffaa);
+            color: black;
+            box-shadow: var(--glow);
+        }
+        button:hover { transform: translateY(-8px); box-shadow: 0 20px 50px rgba(0,255,255,0.7); }
+        button:disabled { background: #333; cursor: not-allowed; transform: none; }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            display: none;
+        }
+        .success { background: rgba(0,255,100,0.2); border: 2px solid #00ffaa; }
+        .error   { background: rgba(255,0,100,0.2); border: 2px solid #ff0066; }
+
+        .network {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: #00ff00;
+            color: black;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .loader {
+            display: none;
+            margin: 20px 0;
+        }
+        .loader::after {
+            content: '';
+            display: inline-block;
+            width: 30px; height: 30px;
+            border: 4px solid #00ffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="network" id="network">Нет подключения</div>
+    
+    <h1>CRYPTO CREATOR</h1>
+    <p class="subtitle">Создай свой токен за 30 секунд<br>на Simple-Web3-Php</p>
+
+    <button id="connectBtn">Подключить кошелёк</button>
+
+    <input type="text" id="name" placeholder="Название токена" value="MyToken">
+    <input type="text" id="symbol" placeholder="Символ (MTK)" value="MTK" maxlength="10">
+    <input type="number" id="supply" placeholder="Общий объём" value="1000000">
+    <select id="decimals">
+        <option value="18">18 decimals (как ETH)</option>
+        <option value="9">9 decimals (как USDT)</option>
+        <option value="6">6 decimals (как USDC)</option>
+    </select>
+
+    <div class="loader" id="loader"></div>
+    <button id="createBtn" disabled>СОЗДАТЬ СВОЮ КРИПТОВАЛЮТУ</button>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+let account, chainId;
+
+document.getElementById('connectBtn').onclick = async () => {
+    if (!window.ethereum) {
+        alert('Установи MetaMask или другой Web3-кошелёк!');
+        return;
+    }
+    try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const web3 = new Web3(window.ethereum);
+        account = (await web3.eth.getAccounts())[0];
+        chainId = await web3.eth.getChainId();
+
+        const nets = {1:"Ethereum", 11155111:"Sepolia", 137:"Polygon", 56:"BSC"};
+        document.getElementById('network').textContent = nets[chainId] || `Chain ${chainId}`;
+
+        document.getElementById('connectBtn').innerHTML = `Подключено<br><small>\( {account.slice(0,8)}... \){account.slice(-6)}</small>`;
+        document.getElementById('createBtn').disabled = false;
+    } catch (e) {
+        alert('Ошибка подключения: ' + e.message);
+    }
+};
+
+document.getElementById('createBtn').onclick = async () => {
+    if (!account) return alert('Сначала подключи кошелёк!');
+
+    const btn = document.getElementById('createBtn');
+    const loader = document.getElementById('loader');
+    const result = document.getElementById('result');
+    btn.disabled = true;
+    loader.style.display = 'block';
+    result.style.display = 'none';
+
+    const data = {
+        name: document.getElementById('name').value,
+        symbol: document.getElementById('symbol').value,
+        supply: document.getElementById('supply').value,
+        decimals: document.getElementById('decimals').value,
+        from: account,
+        chainId: chainId
+    };
+
+    try {
+        const res = await fetch('deploy.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const json = await res.json();
+
+        loader.style.display = 'none';
+
+        if (json.success) {
+            result.className = 'result success';
+            result.innerHTML = `
+                <h3>ТОКЕН УСПЕШНО СОЗДАН!</h3>
+                <strong>\( {data.name} ( \){data.symbol})</strong><br><br>
+                Адрес контракта:<br>
+                <a href="\( {json.explorer}" target="_blank"> \){json.contract}</a><br><br>
+                Tx: <a href="\( {json.tx_explorer}" target="_blank"> \){json.tx.slice(0,16)}...</a>
+            `;
+        } else {
+            result.className = 'result error';
+            result.innerHTML = `<h3>Ошибка</h3>${json.error || 'Неизвестная ошибка'}`;
+        }
+        result.style.display = 'block';
+    } catch (e) {
+        loader.style.display = 'none';
+        result.className = 'result error';
+        result.innerHTML = `<h3>Ошибка сети</h3>${e.message}`;
+        result.style.display = 'block';
+    }
+    btn.disabled = false;
+};
+</script>
+</body>
+</html>
