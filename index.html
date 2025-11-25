@@ -3,66 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создание ERC-20 Токена на Ethereum</title>
-    <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <title>Ethereum Token Creator | ERC-20 Мастер</title>
     <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+    <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f6f9; color: #333; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #3498db; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { background-color: #3498db; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; width: 100%; margin-top: 10px; }
-        button:hover { background-color: #2980b9; }
-        #status { margin-top: 20px; padding: 10px; border-radius: 5px; background-color: #ecf0f1; border: 1px solid #bdc3c7; }
-        .wallet-status { text-align: center; margin-bottom: 20px; padding: 10px; border: 1px solid #e74c3c; color: #e74c3c; border-radius: 5px; }
+        :root {
+            --primary-color: #627EEA; /* Цвет Ethereum */
+            --secondary-color: #38a169; /* Цвет успеха */
+            --bg-color: #f7f9fc;
+            --text-color: #333;
+            --card-bg: white;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 550px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 30px 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 15px;
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+        #connect-btn {
+            background-color: var(--primary-color);
+            color: white;
+            margin-bottom: 20px;
+        }
+        #deploy-btn {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        #status-area {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #e6e9f2;
+            border-left: 5px solid var(--primary-color);
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        .wallet-status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #e8f5e9;
+            color: var(--secondary-color);
+            font-weight: bold;
+            margin-bottom: 20px;
+            border: 1px solid var(--secondary-color);
+        }
+        .wallet-status.disconnected {
+            background-color: #fbecec;
+            color: #c0392b;
+            border: 1px solid #c0392b;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Создание ERC-20 Токена</h1>
+        <h1>Создание ERC-20 Токена (ETH) ✨</h1>
         
-        <div class="wallet-status" id="wallet-status">
-            Кошелек не подключен. Нажмите "Подключить кошелек".
+        <div class="wallet-status disconnected" id="wallet-status">
+            🔴 Кошелек не подключен. 
         </div>
 
-        <button id="connect-btn">Подключить кошелек (WalletConnect)</button>
+        <button class="btn" id="connect-btn">
+            Подключить кошелек (WalletConnect / MetaMask)
+        </button>
 
         <form id="token-form">
-            <hr>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
             <h2>Параметры Токена</h2>
 
             <div class="form-group">
-                <label for="name">Название Токена (Name)</label>
-                <input type="text" id="name" required value="MyAwesomeCoin">
+                <label for="name">Название Токена (Name, напр. "MetaCoin")</label>
+                <input type="text" id="name" required placeholder="Введите полное название" value="MyToken">
             </div>
 
             <div class="form-group">
-                <label for="symbol">Символ (Symbol)</label>
-                <input type="text" id="symbol" required value="MAC">
+                <label for="symbol">Символ (Symbol, напр. "MTC")</label>
+                <input type="text" id="symbol" required placeholder="Введите короткий символ (3-5 букв)" value="MTK">
             </div>
 
             <div class="form-group">
                 <label for="supply">Общее предложение (Total Supply)</label>
-                <input type="number" id="supply" required value="1000000" min="1">
+                <input type="number" id="supply" required min="1" placeholder="Напр. 1000000" value="1000000">
             </div>
             
             <div class="form-group">
-                <label for="decimals">Десятичные знаки (Decimals)</label>
-                <input type="number" id="decimals" required value="18" min="0" max="18">
+                <label for="decimals">Десятичные знаки (Decimals, 18 - стандарт ETH)</label>
+                <input type="number" id="decimals" required min="0" max="18" value="18">
             </div>
 
-            <button type="submit" id="deploy-btn" disabled>Деплой Токена на Ethereum</button>
+            <button type="submit" class="btn" id="deploy-btn" disabled>
+                🚀 Деплой Токена на Ethereum
+            </button>
         </form>
 
-        <div id="status">
-            Ожидание действий...
+        <div id="status-area">
+            Ожидание подключения кошелька...
         </div>
-
-        <div id="result"></div>
     </div>
 
-    <script src="app.js"></script> </body>
+    <script src="app.js"></script> 
+</body>
 </html>
