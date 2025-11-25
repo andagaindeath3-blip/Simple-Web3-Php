@@ -1,10 +1,10 @@
-// app.js — полностью на WalletConnect v2 + Web3Modal + wagmi
+https://2026createcoin.vercel.app/// app.js — полностью на WalletConnect v2 + Web3Modal + wagmi
 import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi';
 import { mainnet, sepolia, polygon, base, arbitrum } from 'wagmi/chains';
 import { reconnect } from '@wagmi/core';
 
 // Твой projectId с https://cloud.walletconnect.com (бесплатно, 2 минуты)
-const projectId = 'ТВОЙ_PROJECT_ID_С_WALLETCONNECT'; // ← ОБЯЗАТЕЛЬНО замени!
+const projectId = '0366b8e4-9a07-4421-9372-5e0872fe4e2c'; // ← ОБЯЗАТЕЛЬНО замени!
 
 const chains = [mainnet, sepolia, polygon, base, arbitrum];
 const metadata = {
@@ -125,3 +125,4 @@ document.getElementById('createToken').addEventListener('click', async () => {
 if (modal.getAddress()) {
   modal.subscribeEvents(); // уже подключён
 }
+
