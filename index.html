@@ -6,7 +6,7 @@
     <title>Создание Токена Ethereum - dApp</title>
     
     <style>
-        /* Стили, которые делают кнопки и форму красивыми и понятными */
+        /* Стили для чистоты и адаптивности */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background-color: #f4f7f6; color: #333; }
         h1 { color: #007bff; margin-bottom: 5px; }
         #connectButton { padding: 12px 25px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 8px; transition: background-color 0.3s; }
@@ -28,7 +28,7 @@
 <body>
 
     <h1>🚀 Ethereum Токенайзер dApp</h1>
-    <p>Шаг 1: Подключите кошелек. Шаг 2: Создайте и разверните свой токен ERC-20.</p>
+    <p>Подключите кошелек, чтобы развернуть собственный токен ERC-20.</p>
 
     <button id="connectButton">Подключить кошелек</button>
 
@@ -57,14 +57,185 @@
     </div>
 
     <div class="note">
-        **⚠️ ВАЖНО:** Чтобы кнопки работали, сохраните логику в файл **`app.js`** в той же папке и замените там плейсхолдеры для **ABI**, **Байт-кода** и **Infura ID**.
+        **⚠️ ВАЖНО:** Чтобы кнопка "Deploy" работала, необходимо **заменить плейсхолдеры** для **ABI**, **Байт-кода** и **Infura ID** в секции `SCRIPT` ниже!
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
-    <script src="app.js"></script>
+    <script>
+        // --- 1. Глобальные переменные и КОНФИГУРАЦИЯ ---
+        let web3 = null;
+        let provider = null;
+        let selectedAccount = null;
+
+        // !!! ОБЯЗАТЕЛЬНО ЗАМЕНИТЕ ЭТИ ДАННЫЕ !!!
+        const INFURA_ID = "ВАШ_INFURA_ID_ИЛИ_КЛЮЧ_ДЛЯ_НОДЫ"; // Ключ для WalletConnect
+        const TOKEN_ABI = []; // <--- ВАШ ABI КОНТРАКТА
+        const TOKEN_BYTECODE = ""; // <--- ВАШ БАЙТ-КОД КОНТРАКТА (строка)
+
+        // --- Конфигурация Web3Modal ---
+        const providerOptions = {
+            walletconnect: {
+                package: WalletConnectProvider,
+                options: { infuraId: INFURA_ID }
+            },
+            injected: {
+                display: { name: "MetaMask / Injected" },
+                package: null
+            }
+        };
+
+        const web3Modal = new Web3Modal.default({
+            cacheProvider: true,
+            providerOptions: providerOptions,
+            theme: "light",
+        });
+
+        // --- 2. Элементы DOM и слушатели событий ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const connectButton = document.getElementById('connectButton');
+            const tokenDeployForm = document.getElementById('tokenDeployForm');
+            
+            connectButton.addEventListener('click', onConnect);
+            tokenDeployForm.addEventListener('submit', handleDeployToken);
+
+            // Авто-подключение
+            if (web3Modal.cachedProvider) {
+                onConnect();
+            }
+        });
+
+
+        // --- ФУНКЦИИ ПОДКЛЮЧЕНИЯ/ОТКЛЮЧЕНИЯ ---
+
+        async function onConnect() {
+            const deployButton = document.getElementById('deployButton');
+            try {
+                provider = await web3Modal.connect();
+                web3 = new Web3(provider);
+
+                const accounts = await web3.eth.getAccounts();
+                selectedAccount = accounts[0];
+                const chainId = await web3.eth.getChainId();
+
+                updateUI(selectedAccount, chainId);
+                subscribeProvider(provider);
+                if (deployButton) deployButton.disabled = false;
+            } catch (error) {
+                console.error("Ошибка подключения:", error);
+                document.getElementById('connectionStatus').textContent = 'Ошибка подключения!';
+                document.getElementById('connectionStatus').classList.add('error');
+            }
+        }
+
+        async function onDisconnect() {
+            const deployButton = document.getElementById('deployButton');
+            if (provider && provider.close) {
+                await provider.close();
+            }
+            await web3Modal.clearCachedProvider();
+            resetUI();
+            if (deployButton) deployButton.disabled = true;
+            provider = null; web3 = null; selectedAccount = null;
+        }
+
+        function subscribeProvider(provider) {
+            if (!provider.on) return;
+            provider.on("accountsChanged", () => window.location.reload());
+            provider.on("chainChanged", () => window.location.reload());
+            provider.on("disconnect", () => onDisconnect());
+        }
+
+        // --- ФУНКЦИИ УПРАВЛЕНИЯ UI ---
+
+        function updateUI(account, chainId) {
+            const connectButton = document.getElementById('connectButton');
+            if (account) {
+                document.getElementById('connectionStatus').textContent = 'Подключен';
+                document.getElementById('connectionStatus').classList.remove('error');
+                document.getElementById('connectionStatus').classList.add('success');
+                document.getElementById('accountAddress').textContent = account.substring(0, 6) + "..." + account.substring(account.length - 4);
+                document.getElementById('chainId').textContent = chainId;
+                connectButton.textContent = 'Отключиться';
+                connectButton.onclick = onDisconnect;
+            }
+        }
+        
+        function resetUI() {
+            const connectButton = document.getElementById('connectButton');
+            document.getElementById('connectionStatus').textContent = 'Не подключен';
+            document.getElementById('connectionStatus').classList.remove('success', 'error');
+            document.getElementById('connectionStatus').classList.add('error');
+            document.getElementById('accountAddress').textContent = 'Нет данных';
+            document.getElementById('chainId').textContent = 'Нет данных';
+            connectButton.textContent = 'Подключить кошелек';
+            connectButton.onclick = onConnect;
+        }
+
+        // --- ФУНКЦИЯ РАЗВЕРТЫВАНИЯ ТОКЕНА (Кнопка "Развернуть Токен") ---
+
+        async function handleDeployToken(event) {
+            event.preventDefault();
+
+            const deployButton = document.getElementById('deployButton');
+            const deploymentResult = document.getElementById('deploymentResult');
+
+            if (!selectedAccount) {
+                alert("Пожалуйста, сначала подключите кошелек!");
+                return;
+            }
+            
+            if (TOKEN_ABI.length === 0 || TOKEN_BYTECODE.length < 10 || INFURA_ID === "ВАШ_INFURA_ID_ИЛИ_КЛЮЧ_ДЛЯ_НОДЫ") {
+                deploymentResult.innerHTML = "<p class='error'>❌ Ошибка: Не все плейсхолдеры (ABI, Байт-код, Infura ID) настроены в скрипте.</p>";
+                return;
+            }
+
+            const name = document.getElementById('tokenName').value;
+            const symbol = document.getElementById('tokenSymbol').value;
+            const initialSupply = document.getElementById('initialSupply').value;
+            // Переводим начальный запас в Wei, используя 18 десятичных знаков
+            const supplyInWei = web3.utils.toWei(initialSupply.toString(), 'ether');
+            
+            try {
+                deployButton.textContent = "Развертывание... (Проверьте кошелек)";
+                deployButton.disabled = true;
+                deploymentResult.innerHTML = "<p>⌛ Ожидание подтверждения транзакции в вашем кошельке...</p>";
+
+                // 1. Создаем объект контракта
+                const contract = new web3.eth.Contract(TOKEN_ABI);
+
+                // 2. Отправляем транзакцию развертывания
+                const deployment = contract.deploy({
+                    data: TOKEN_BYTECODE.startsWith('0x') ? TOKEN_BYTECODE : '0x' + TOKEN_BYTECODE,
+                    arguments: [name, symbol, supplyInWei] 
+                });
+
+                const newContractInstance = await deployment.send({
+                    from: selectedAccount,
+                    gas: 5000000 
+                });
+
+                // 3. Успешное развертывание
+                const contractAddress = newContractInstance.options.address;
+                const networkLink = `https://etherscan.io/address/${contractAddress}`; 
+                
+                deploymentResult.innerHTML = `
+                    <p class='success'>✅ Токен успешно развернут!</p>
+                    <p>Адрес контракта: <a href="${networkLink}" target="_blank">${contractAddress}</a></p>
+                    <p>Имя: ${name}, Символ: ${symbol}</p>
+                `;
+
+            } catch (error) {
+                console.error("Ошибка развертывания:", error);
+                deploymentResult.innerHTML = `<p class='error'>❌ Ошибка развертывания: ${error.message || "Транзакция отклонена или произошла ошибка."}</p>`;
+            } finally {
+                deployButton.textContent = "Развернуть Токен (Deploy)";
+                deployButton.disabled = false;
+            }
+        }
+    </script>
 
 </body>
 </html>
