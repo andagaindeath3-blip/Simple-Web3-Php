@@ -1,241 +1,244 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создание Токена Ethereum - dApp</title>
-    
-    <style>
-        /* Стили для чистоты и адаптивности */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background-color: #f4f7f6; color: #333; }
-        h1 { color: #007bff; margin-bottom: 5px; }
-        #connectButton { padding: 12px 25px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 8px; transition: background-color 0.3s; }
-        #connectButton:hover { background-color: #0056b3; }
-        #status { margin-top: 25px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; width: 350px; text-align: left; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        #status p { margin: 5px 0; }
-        .success { color: #28a745; font-weight: bold; }
-        .error { color: #dc3545; font-weight: bold; }
-        #deployForm { margin-top: 30px; padding: 25px; border: 1px solid #ccc; border-radius: 8px; width: 350px; background-color: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
-        #deployForm label { display: block; margin-top: 10px; font-weight: bold; font-size: 14px; }
-        #deployForm input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        #deployButton { margin-top: 20px; padding: 12px; width: 100%; font-size: 16px; cursor: pointer; background-color: #28a745; color: white; border: none; border-radius: 8px; transition: background-color 0.3s; }
-        #deployButton:disabled { background-color: #90c69d; cursor: not-allowed; }
-        #deployButton:hover:not(:disabled) { background-color: #1e7e34; }
-        #deploymentResult { margin-top: 15px; font-size: 14px; word-wrap: break-word; }
-        .note { margin-top: 20px; padding: 10px; background-color: #ffeeba; border: 1px solid #ffcc00; border-radius: 5px; text-align: center; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crypto Creator Pro — Запусти свою мем-коин за 1 клик</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@4.3.0/dist/web3.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Rajdhani:wght@600&family=Roboto+Mono&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #120321, #240b36, #000);
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="%23ff00ff" opacity="0.1"/></svg>');
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+      padding-top: 5vh;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 4rem;
+      background: linear-gradient(90deg, #ff00ff, #00ffff, #ffff00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(255,0,255,0.5);
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.5rem;
+      opacity: 0.9;
+      margin-bottom: 30px;
+    }
+
+    .wallet-connect {
+      margin: 40px 0;
+    }
+
+    #connectWallet {
+      padding: 16px 40px;
+      font-size: 1.3rem;
+      background: linear-gradient(45deg, #7928ca, #ff0080);
+      border: none;
+      border-radius: 50px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(255,0,255,0.6);
+      transition: all 0.4s;
+    }
+
+    #connectWallet:hover { transform: scale(1.05); }
+
+    #walletAddress {
+      margin-top: 20px;
+      font-family: 'Roboto Mono', monospace;
+      background: rgba(0,0,0,0.5);
+      padding: 12px 20px;
+      border-radius: 10px;
+      display: inline-block;
+      font-size: 1.1rem;
+    }
+
+    .creator-box {
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 40px;
+      margin: 40px 0;
+      border: 1px solid rgba(255,0,255,0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin: 40px 0;
+    }
+
+    button.big-btn {
+      padding: 20px 40px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      min-width: 280px;
+      transition: all 0.4s;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .create { background: linear-gradient(45deg, #ff00ff, #00ffff); color: white; }
+    .pump   { background: linear-gradient(45deg, #00ff99, #00ff00); color: black; }
+    .dump   { background: linear-gradient(45deg, #ff3300, #ff6600); color: white; }
+    .rug    { background: linear-gradient(45deg, #8b00ff, #ff1493); color: white; }
+
+    button.big-btn:hover { transform: translateY(-10px) scale(1.05); box-shadow: 0 20px 40px rgba(0,0,0,0.7); }
+
+    .result {
+      margin-top: 40px;
+      padding: 30px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 20px;
+      font-size: 1.8rem;
+      min-height: 120px;
+      border: 2px dashed #ff00ff;
+    }
+
+    .connected {
+      color: #00ff00;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
-    <h1>🚀 Ethereum Токенайзер dApp</h1>
-    <p>Подключите кошелек, чтобы развернуть собственный токен ERC-20.</p>
+<div class="container">
+  <h1>CRYPTO CREATOR PRO</h1>
+  <p class="subtitle">Запусти свой $PEPE-клон за 1 клик в 2025 году</p>
 
-    <button id="connectButton">Подключить кошелек</button>
+  <div class="wallet-connect">
+    <button id="connectWallet">Подключить MetaMask / Wallet</button>
+    <div id="walletAddress"></div>
+  </div>
 
-    <div id="status">
-        <h3>Статус подключения</h3>
-        <p>Статус: <span id="connectionStatus" class="error">Не подключен</span></p>
-        <p>Адрес: <span id="accountAddress">Нет данных</span></p>
-        <p>ID Сети: <span id="chainId">Нет данных</span></p>
+  <div class="creator-box" id="creatorSection" style="display:none;">
+    <h2>Ты вошёл в матрицу. Теперь создавай.</h2>
+
+    <div class="buttons">
+      <button class="big-btn create" id="createCoin">ЗАПУСТИТЬ СВОЮ МОНЕТУ</button>
+      <button class="big-btn pump" id="pump">PUMP IT TO THE MOON</button>
+      <button class="big-btn dump" id="dump">DUMP НА 99.9%</button>
+      <button class="big-btn rug" id="rug">RUG PULL (18+)</button>
     </div>
 
-    <div id="deployForm">
-        <h2>Создание и Развертывание Токена</h2>
-        <form id="tokenDeployForm">
-            <label for="tokenName">Имя Токена (Name):</label>
-            <input type="text" id="tokenName" value="MyCoin" required>
-            
-            <label for="tokenSymbol">Символ Токена (Symbol):</label>
-            <input type="text" id="tokenSymbol" value="MC" required maxlength="5">
-            
-            <label for="initialSupply">Начальный Запас (Initial Supply):</label>
-            <input type="number" id="initialSupply" value="1000000" required min="1">
-            
-            <button type="submit" id="deployButton" disabled>Развернуть Токен (Deploy)</button>
-        </form>
-        <div id="deploymentResult"></div>
+    <div class="result" id="result">
+      Подключи кошелёк → нажми кнопку → стань миллиардером
     </div>
+  </div>
+</div>
 
-    <div class="note">
-        **⚠️ ВАЖНО:** Чтобы кнопка "Deploy" работала, необходимо **заменить плейсхолдеры** для **ABI**, **Байт-кода** и **Infura ID** в секции `SCRIPT` ниже!
-    </div>
+<script>
+  const connectBtn = document.getElementById("connectWallet");
+  const walletAddr = document.getElementById("walletAddress");
+  const creatorSection = document.getElementById("creatorSection");
+  const result = document.getElementById("result");
 
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+  let userAddress = null;
 
-    <script>
-        // --- 1. Глобальные переменные и КОНФИГУРАЦИЯ ---
-        let web3 = null;
-        let provider = null;
-        let selectedAccount = null;
+  // Подключение кошелька
+  connectBtn.onclick = async () => {
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        userAddress = accounts[0];
+        walletAddr.textContent = "Подключено: " + userAddress.slice(0,6) + "..." + userAddress.slice(-4);
+        walletAddr.classList.add("connected");
+        creatorSection.style.display = "block";
+        connectBtn.textContent = "Кошелёк подключён";
+        connectBtn.disabled = true;
+        result.textContent = "Добро пожаловать, " + userAddress.slice(0,10) + "... Готов создать историю?";
+      } catch (err) {
+        alert("Не удалось подключить кошелёк 😢");
+      }
+    } else {
+      alert("Установи MetaMask или другой Web3-кошелёк!");
+    }
+  };
 
-        // !!! ОБЯЗАТЕЛЬНО ЗАМЕНИТЕ ЭТИ ДАННЫЕ !!!
-        const INFURA_ID = "ВАШ_INFURA_ID_ИЛИ_КЛЮЧ_ДЛЯ_НОДЫ"; // Ключ для WalletConnect
-        const TOKEN_ABI = []; // <--- ВАШ ABI КОНТРАКТА
-        const TOKEN_BYTECODE = ""; // <--- ВАШ БАЙТ-КОД КОНТРАКТА (строка)
+  const memes = ["GROK", "ELON", "TRUMP", "PEPE", "WOJAK", "CHAD", "VITALIK", "SATOCHI", "DOGE", "SHIB", "FROG", "CAT", "MOON", "REKT", "BAG", "HODL", "FOMO", "RUG", "PAMP", "XAI"];
+  const endings = ["COIN", "TOKEN", "MOON", "6900", "420", "INFINITE", "AI", "QUANTUM", "NANO", "MEGA", "ULTRA", "KING", "QUEEN", "LORD", "WIFE", "HUSBAND"];
 
-        // --- Конфигурация Web3Modal ---
-        const providerOptions = {
-            walletconnect: {
-                package: WalletConnectProvider,
-                options: { infuraId: INFURA_ID }
-            },
-            injected: {
-                display: { name: "MetaMask / Injected" },
-                package: null
-            }
-        };
+  document.getElementById("createCoin").onclick = () => {
+    const name = memes[Math.floor(Math.random()*memes.length)] + endings[Math.floor(Math.random()*endings.length)];
+    const ticker = "$" + name.substring(0,5).toUpperCase();
+    const supply = ["1,000,000,000", "69,420,000,000", "420,690,000,000", "1,000,000,000,000"][Math.floor(Math.random()*4)];
 
-        const web3Modal = new Web3Modal.default({
-            cacheProvider: true,
-            providerOptions: providerOptions,
-            theme: "light",
-        });
+    result.innerHTML = `
+      <div style="animation: bounce 0.8s;">🎉🎉🎉<br>
+      Ты только что создал:<br><br>
+      <span style="font-size:2.5rem; color:#00ffff;">${name}</span><br>
+      <span style="font-size:3rem; color:#ff00ff;">${ticker}</span><br><br>
+      Общий запас: ${supply} токенов<br>
+      Ликвидность добавлена на Uniswap<br>
+      Уже на CoinGecko и CoinMarketCap!<br><br>
+      <b>Твоё состояние: $0 → $1,337,420,690</b>
+      </div>
+    `;
+    confettiRain();
+  };
 
-        // --- 2. Элементы DOM и слушатели событий ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const connectButton = document.getElementById('connectButton');
-            const tokenDeployForm = document.getElementById('tokenDeployForm');
-            
-            connectButton.addEventListener('click', onConnect);
-            tokenDeployForm.addEventListener('submit', handleDeployToken);
+  document.getElementById("pump").onclick = () => {
+    result.innerHTML = "🚀 +99999% за 10 минут!<br>Ты в топ-10 CoinMarketCap!<br>Elon Musk уже твитнул про тебя!";
+    confettiRain();
+  };
 
-            // Авто-подключение
-            if (web3Modal.cachedProvider) {
-                onConnect();
-            }
-        });
+  document.getElementById("dump").onclick = () => {
+    result.innerHTML = "💥 -99.99% за 4 секунды<br>Чарт стал ровной линией<br>Добро пожаловать в клуб багхолдеров 😭";
+  };
 
+  document.getElementById("rug").onclick = () => {
+    result.innerHTML = "🧹 RUG PULL УСПЕШНО ВЫПОЛНЕН!<br>Ликвидность выведена в Дубай<br>Ты теперь анонимен на Солане<br>Поздравляю, легаси достигнуто ✅";
+  };
 
-        // --- ФУНКЦИИ ПОДКЛЮЧЕНИЯ/ОТКЛЮЧЕНИЯ ---
+  // Конфетти
+  function confettiRain() {
+    for(let i = 0; i < 150; i++) {
+      const c = document.createElement("div");
+      c.style.position = "fixed";
+      c.style.left = Math.random() * 100 + "vw";
+      c.style.top = "-10px";
+      c.style.width = "12px";
+      c.style.height = "12px";
+      c.style.background = ["#ff00ff","#00ffff","#ffff00","#00ff00","#ff0066"][Math.floor(Math.random()*5)];
+      c.style.borderRadius = Math.random() > 0.5 ? "50%" : "0";
+      c.style.transform = `rotate(${Math.random()*360}deg)`;
+      c.style.pointerEvents = "none";
+      c.style.zIndex = "9999";
+      c.style.animation = "fall 4s linear forwards";
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 4000);
+    }
+  }
 
-        async function onConnect() {
-            const deployButton = document.getElementById('deployButton');
-            try {
-                provider = await web3Modal.connect();
-                web3 = new Web3(provider);
-
-                const accounts = await web3.eth.getAccounts();
-                selectedAccount = accounts[0];
-                const chainId = await web3.eth.getChainId();
-
-                updateUI(selectedAccount, chainId);
-                subscribeProvider(provider);
-                if (deployButton) deployButton.disabled = false;
-            } catch (error) {
-                console.error("Ошибка подключения:", error);
-                document.getElementById('connectionStatus').textContent = 'Ошибка подключения!';
-                document.getElementById('connectionStatus').classList.add('error');
-            }
-        }
-
-        async function onDisconnect() {
-            const deployButton = document.getElementById('deployButton');
-            if (provider && provider.close) {
-                await provider.close();
-            }
-            await web3Modal.clearCachedProvider();
-            resetUI();
-            if (deployButton) deployButton.disabled = true;
-            provider = null; web3 = null; selectedAccount = null;
-        }
-
-        function subscribeProvider(provider) {
-            if (!provider.on) return;
-            provider.on("accountsChanged", () => window.location.reload());
-            provider.on("chainChanged", () => window.location.reload());
-            provider.on("disconnect", () => onDisconnect());
-        }
-
-        // --- ФУНКЦИИ УПРАВЛЕНИЯ UI ---
-
-        function updateUI(account, chainId) {
-            const connectButton = document.getElementById('connectButton');
-            if (account) {
-                document.getElementById('connectionStatus').textContent = 'Подключен';
-                document.getElementById('connectionStatus').classList.remove('error');
-                document.getElementById('connectionStatus').classList.add('success');
-                document.getElementById('accountAddress').textContent = account.substring(0, 6) + "..." + account.substring(account.length - 4);
-                document.getElementById('chainId').textContent = chainId;
-                connectButton.textContent = 'Отключиться';
-                connectButton.onclick = onDisconnect;
-            }
-        }
-        
-        function resetUI() {
-            const connectButton = document.getElementById('connectButton');
-            document.getElementById('connectionStatus').textContent = 'Не подключен';
-            document.getElementById('connectionStatus').classList.remove('success', 'error');
-            document.getElementById('connectionStatus').classList.add('error');
-            document.getElementById('accountAddress').textContent = 'Нет данных';
-            document.getElementById('chainId').textContent = 'Нет данных';
-            connectButton.textContent = 'Подключить кошелек';
-            connectButton.onclick = onConnect;
-        }
-
-        // --- ФУНКЦИЯ РАЗВЕРТЫВАНИЯ ТОКЕНА (Кнопка "Развернуть Токен") ---
-
-        async function handleDeployToken(event) {
-            event.preventDefault();
-
-            const deployButton = document.getElementById('deployButton');
-            const deploymentResult = document.getElementById('deploymentResult');
-
-            if (!selectedAccount) {
-                alert("Пожалуйста, сначала подключите кошелек!");
-                return;
-            }
-            
-            if (TOKEN_ABI.length === 0 || TOKEN_BYTECODE.length < 10 || INFURA_ID === "ВАШ_INFURA_ID_ИЛИ_КЛЮЧ_ДЛЯ_НОДЫ") {
-                deploymentResult.innerHTML = "<p class='error'>❌ Ошибка: Не все плейсхолдеры (ABI, Байт-код, Infura ID) настроены в скрипте.</p>";
-                return;
-            }
-
-            const name = document.getElementById('tokenName').value;
-            const symbol = document.getElementById('tokenSymbol').value;
-            const initialSupply = document.getElementById('initialSupply').value;
-            // Переводим начальный запас в Wei, используя 18 десятичных знаков
-            const supplyInWei = web3.utils.toWei(initialSupply.toString(), 'ether');
-            
-            try {
-                deployButton.textContent = "Развертывание... (Проверьте кошелек)";
-                deployButton.disabled = true;
-                deploymentResult.innerHTML = "<p>⌛ Ожидание подтверждения транзакции в вашем кошельке...</p>";
-
-                // 1. Создаем объект контракта
-                const contract = new web3.eth.Contract(TOKEN_ABI);
-
-                // 2. Отправляем транзакцию развертывания
-                const deployment = contract.deploy({
-                    data: TOKEN_BYTECODE.startsWith('0x') ? TOKEN_BYTECODE : '0x' + TOKEN_BYTECODE,
-                    arguments: [name, symbol, supplyInWei] 
-                });
-
-                const newContractInstance = await deployment.send({
-                    from: selectedAccount,
-                    gas: 5000000 
-                });
-
-                // 3. Успешное развертывание
-                const contractAddress = newContractInstance.options.address;
-                const networkLink = `https://etherscan.io/address/${contractAddress}`; 
-                
-                deploymentResult.innerHTML = `
-                    <p class='success'>✅ Токен успешно развернут!</p>
-                    <p>Адрес контракта: <a href="${networkLink}" target="_blank">${contractAddress}</a></p>
-                    <p>Имя: ${name}, Символ: ${symbol}</p>
-                `;
-
-            } catch (error) {
-                console.error("Ошибка развертывания:", error);
-                deploymentResult.innerHTML = `<p class='error'>❌ Ошибка развертывания: ${error.message || "Транзакция отклонена или произошла ошибка."}</p>`;
-            } finally {
-                deployButton.textContent = "Развернуть Токен (Deploy)";
-                deployButton.disabled = false;
-            }
-        }
-    </script>
-
+  // Анимации
+  const style = document.createElement("style");
+  style.innerHTML = `
+    @keyframes fall { to { transform: translateY(110vh) rotate(1080deg); opacity: 0; } }
+    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+  `;
+  document.head.appendChild(style);
+</script>
 </body>
 </html>
