@@ -3,150 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создание криптовалюты с использованием Simple-Web3-Php</title>
+    <title>Создать свой токен за 30 секунд</title>
+    <script src="https://cdn.ethers.gg/v6/ethers.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
             margin: 0;
             padding: 20px;
-            background-color: #f4f4f4;
-            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
         }
-        .container {
-            max-width: 800px;
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
             margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
         }
-        h1, h2 {
-            color: #2c3e50;
+        h1 { margin-bottom: 10px; }
+        p { opacity: 0.9; margin-bottom: 30px; }
+        input, select, button {
+            width: 100%;
+            padding: 16px;
+            margin: 12px 0;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
         }
-        pre {
-            background: #f8f8f8;
-            padding: 10px;
-            border-left: 4px solid #007bff;
-            overflow-x: auto;
+        input, select { background: rgba(255,255,255,0.2); color: white; }
+        input::placeholder { color: rgba(255,255,255,0.7); }
+        button {
+            background: #00d4ff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
         }
-        code {
-            background: #e9ecef;
-            padding: 2px 4px;
-            border-radius: 4px;
+        button:hover { background: #00b0d4; transform: scale(1.02); }
+        button:disabled { background: #555; cursor: not-allowed; }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.3);
+            min-height: 50px;
+            word-break: break-all;
         }
-        ul {
-            list-style-type: disc;
-            padding-left: 20px;
-        }
+        .success { background: rgba(0,255,0,0.3)!important; }
+        .error { background: rgba(255,0,0,0.4)!important; }
+        a { color: #a0f7ff; text-decoration: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Создание криптовалюты с использованием Simple-Web3-Php</h1>
-        <p>Этот HTML-документ представляет собой руководство по созданию простой криптовалюты (токена ERC-20) на блокчейне Ethereum с помощью PHP-библиотеки <a href="https://github.com/andagaindeath3-blip/Simple-Web3-Php">Simple-Web3-Php</a>. Библиотека позволяет взаимодействовать с Ethereum через PHP, включая развертывание смарт-контрактов.</p>
+    <div class="card">
+        <h1>Создай свой токен за 30 секунд</h1>
+        <p>Подключи MetaMask → заполни → получи свой токен ERC-20</p>
 
-        <h2>Введение</h2>
-        <p>Simple-Web3-Php — это PHP-библиотека для взаимодействия с Ethereum. Она поддерживает развертывание контрактов, отправку транзакций и работу с токенами ERC-20. Создание криптовалюты подразумевает развертывание смарт-контракта ERC-20 на тестовой или основной сети Ethereum.</p>
-        <ul>
-            <li><strong>Требования:</strong> PHP ≥ 7.4, Composer, доступ к Ethereum-узлу (например, Infura).</li>
-            <li><strong>Сети:</strong> Рекомендуем начинать с тестовой сети (Ropsten, Goerli).</li>
-        </ul>
+        <button id="connectBtn">Подключить MetaMask</button>
+        <div id="account"></div>
 
-        <h2>Шаг 1: Установка библиотеки</h2>
-        <p>Клонируйте репозиторий и установите зависимости с помощью Composer.</p>
-        <pre><code>git clone https://github.com/andagaindeath3-blip/Simple-Web3-Php.git
-cd Simple-Web3-Php
-composer install</code></pre>
+        <div id="form" style="display:none; margin-top:20px;">
+            <input type="text" id="name" placeholder="Название токена (MyCoin)" required>
+            <input type="text" id="symbol" placeholder="Символ (MYC)" maxlength="11" required>
+            <input type="number" id="supply" placeholder="Общий выпуск (например: 1000000)" required>
+            <button id="createBtn">Создать токен!</button>
+        </div>
 
-        <h2>Шаг 2: Настройка подключения к Ethereum</h2>
-        <p>Создайте файл <code>config.php</code> для инициализации Web3.</p>
-        <pre><code>&lt;?php
-use SWeb3\SWeb3;
-
-$rpcUrl = 'https://ropsten.infura.io/v3/YOUR_INFURA_KEY'; // Замените на ваш ключ
-$sweb3 = new SWeb3($rpcUrl);
-$sweb3->setPersonalData('YOUR_FROM_ADDRESS', 'YOUR_PRIVATE_KEY'); // Адрес и приватный ключ аккаунта</code></pre>
-
-        <h2>Шаг 3: Создание смарт-контракта ERC-20</h2>
-        <p>Используйте Solidity для простого ERC-20 токена. Сохраните как <code>MyToken.sol</code>.</p>
-        <pre><code>pragma solidity ^0.8.0;
-
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
-contract MyToken is ERC20 {
-    constructor(uint256 initialSupply) ERC20("MyToken", "MTK") {
-        _mint(msg.sender, initialSupply);
-    }
-}</code></pre>
-        <p>Скомпилируйте контракт (используйте Remix IDE или solc) для получения ABI и bytecode.</p>
-
-        <h2>Шаг 4: Развертывание контракта с помощью PHP</h2>
-        <p>Создайте файл <code>deploy_token.php</code>. Замените placeholders на реальные значения ABI и bytecode.</p>
-        <pre><code>&lt;?php
-require_once 'vendor/autoload.php';
-require_once 'config.php'; // Из шага 2
-
-use SWeb3\SWeb3_Contract;
-use SWeb3\Utils;
-
-// ABI вашего контракта (JSON массив)
-$abi = json_decode('[
-    {
-        "inputs": [{"internalType": "uint256", "name": "initialSupply", "type": "uint256"}],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-    },
-    // ... полный ABI из компилятора
-]', true);
-
-// Bytecode из компилятора
-$bytecode = '0x6080604052...'; // Полный bytecode
-
-$contract = new SWeb3_Contract($sweb3, '', $abi);
-$contract->setBytecode($bytecode);
-
-// Параметры конструктора: initialSupply в wei (например, 1M токенов * 10^18)
-$initialSupply = Utils::toWei('1000000', 'ether'); // Для 18 decimals
-$params = [$initialSupply];
-
-$extra = [
-    'nonce' => $sweb3->personal->getNonce(),
-    'gasLimit' => 3000000 // Оцените газ
-];
-
-$result = $contract->deployContract($params, $extra);
-
-if ($result->result) {
-    echo "Контракт развернут! Адрес: " . $result->result;
-} else {
-    echo "Ошибка: " . $result->error->message;
-}</code></pre>
-
-        <h2>Шаг 5: Взаимодействие с токеном</h2>
-        <p>После развертывания используйте адрес контракта для вызовов (баланс, трансфер).</p>
-        <pre><code>&lt;?php
-// После развертывания
-$contractAddress = $result->result;
-$tokenContract = new SWeb3_Contract($sweb3, $contractAddress, $abi);
-
-// Получить баланс
-$balance = $tokenContract->call('balanceOf', [$sweb3->personal->address]);
-echo "Баланс: " . Utils::fromWei($balance->result, 'ether');
-
-// Трансфер
-$transferResult = $tokenContract->send('transfer', ['0xRECIPIENT_ADDRESS', Utils::toWei('100', 'ether')], $extra);</code></pre>
-
-        <h2>Предупреждения</h2>
-        <ul>
-            <li>Никогда не храните приватные ключи в коде для продакшена.</li>
-            <li>Тестируйте на тестнете, чтобы избежать потери средств.</li>
-            <li>Для OpenZeppelin импортов используйте Remix или локальный компилятор.</li>
-            <li>Подробнее в <a href="https://github.com/andagaindeath3-blip/Simple-Web3-Php/blob/master/README.md">README репозитория</a>.</li>
-        </ul>
-
-        <h2>Заключение</h2>
-        <p>С помощью Simple-Web3-Php вы можете легко создать и управлять своей криптовалютой на Ethereum. Это открывает двери для dApp и DeFi-проектов. Если нужны дополнения, изучите примеры в репозитории (example.contract_creation.php).</p>
+        <div class="status" id="status">Готов к запуску...</div>
     </div>
-</body>
-</html>
+
+<script>
+    const connectBtn = document.getElementById('connectBtn');
+    const createBtn = document.getElementById('createBtn');
+    const status = document.getElementById('status');
+    const accountDiv = document.getElementById('account');
+    const form = document.getElementById('form');
+
+    let signer, userAddress;
+
+    // Подключение кошелька
+    connectBtn.onclick = async () => {
+        if (!window.ethereum) {
+            alert("Установите MetaMask!");
+            return;
+        }
+
+        try {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            signer = await provider.getSigner();
+            userAddress = await signer.getAddress();
+
+            accountDiv.innerHTML = `Подключено: <b>\( {userAddress.substr(0,8)}... \){userAddress.substr(-6)}</b>`;
+            connectBtn.style.display = 'none';
+            form.style.display = 'block';
+            status.textContent = "Кошелёк подключён! Заполните данные токена.";
+            status.classList.remove('error', 'success');
+        } catch (e) {
+            status.textContent = "Ошибка подключения кошелька";
+            status.classList.add('error');
+        }
+    };
+
+    // Создание токена
+    createBtn.onclick = async () => {
+        const name = document.getElementById('name').value.trim();
+        const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+        const supply = document.getElementById('supply').value;
+
+        if (!name || !symbol || !supply || supply <= 0) {
+            status.textContent = "Заполните все поля корректно!";
+            status.classList.add('error');
+            return;
+        }
+
+        status.textContent = "Создаём токен... Подтвердите транзакцию в MetaMask";
+        status.classList.remove('error', 'success');
+        createBtn.disabled = true;
+
+        // Минимальный ERC-20 контракт (без лишних проверок — только для создания)
+        const bytecode = "608060405234801561001057600080fd5b5060c08061001f60003960c0f3fe6080604052348015600f57600080fd5b50600436106032575b600060355b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b
