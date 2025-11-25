@@ -6,14 +6,15 @@
     <title>CRYPTO CREATOR 2026 — Создай токен в любой сети</title>
     <meta name="description" content="Создай свой токен за 1 минуту в Ethereum, BSC, Polygon, Arbitrum, Solana, TON и 20+ других сетях через Simple-Web3-Php">
     
-    <!-- Open Graph -->
+    <!-- Open Graph для соцсетей -->
     <meta property="og:title" content="CRYPTO CREATOR 2026">
     <meta property="og:description" content="Создай токен в любой сети за 60 секунд">
     <meta property="og:image" content="https://2026createcoin.vercel.app/og-image.jpg">
     <meta property="og:url" content="https://2026createcoin.vercel.app">
     
-    <!-- Иконка и стиль -->
+    <!-- Иконка -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>₿</text></svg>">
+    
     <style>
         :root {
             --bg: #0f0f1a;
@@ -21,7 +22,7 @@
             --accent: #00f5ff;
             --text: #e0e0e0;
         }
-        * { margin:0; padding:0; box-sizing:border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', sans-serif;
             background: var(--bg);
@@ -31,8 +32,9 @@
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            background-image: radial-gradient(circle at 10% 20%, rgba(0,245,255,0.1) 0%, transparent 20%),
-                              radial-gradient(circle at 90% 80%, rgba(0,245,255,0.1) 0%, transparent 20%);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0,245,255,0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0,245,255,0.1) 0%, transparent 20%);
         }
         header {
             text-align: center;
@@ -110,7 +112,7 @@
             transition: all 0.3s;
             box-shadow: 0 10px 30px rgba(0,245,255,0.4);
         }
-        .create-btn button:hover {
+        .create-btn button:hover:not(:disabled) {
             transform: scale(1.05);
             box-shadow: 0 20px 40px rgba(0,245,255,0.6);
         }
@@ -124,6 +126,14 @@
             margin-top: 100px;
             opacity: 0.6;
             font-size: 0.9rem;
+        }
+        .error {
+            background: #ff4444;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px;
+            display: none;
         }
         @media (max-width: 768px) {
             h1 { font-size: 2.8rem; }
@@ -139,13 +149,18 @@
 
     <div class="container">
         <div class="network-grid" id="networks">
-            <!-- Сети будут вставлены через JS ниже -->
+            <!-- Сети добавляются через JS -->
         </div>
 
         <div class="create-btn">
             <button id="createTokenBtn" disabled>
                 Выберите сеть для создания токена
             </button>
+        </div>
+
+        <!-- Fallback для ошибок (например, 403) -->
+        <div id="error" class="error">
+            <p>Ошибка доступа (403?). Проверьте соединение или обновите страницу.</p>
         </div>
     </div>
 
@@ -168,19 +183,27 @@
             { name: "zkSync Era", chainId: 324, rpc: "https://mainnet.era.zksync.io", explorer: "https://explorer.zksync.io", logo: "https://zksync.io/favicon.ico" },
             { name: "Solana", chainId: "solana", rpc: "https://api.mainnet-beta.solana.com", explorer: "https://solscan.io", logo: "https://cryptologos.cc/logos/solana-sol-logo.png" },
             { name: "TON", chainId: "ton", rpc: "https://toncenter.com/api/v2/jsonRPC", explorer: "https://tonscan.org", logo: "https://ton.org/logo.png" },
-            { name: "Tron", chainId: "tron", rpc: "https://api.trongrid.io", explorer: "https://tronscan.org", logo: "https://cryptologos.cc/logos/tron-trx-logo.png" },
-            // Добавьте ещё сетей при желании
+            { name: "Tron", chainId: "tron", rpc: "https://api.trongrid.io", explorer: "https://tronscan.org", logo: "https://cryptologos.cc/logos/tron-trx-logo.png" }
         ];
 
         const grid = document.getElementById('networks');
         const btn = document.getElementById('createTokenBtn');
+        const errorDiv = document.getElementById('error');
         let selectedNetwork = null;
+
+        // Проверка на 403 при загрузке
+        fetch('/', { method: 'HEAD' }).then(res => {
+            if (res.status === 403) {
+                errorDiv.style.display = 'block';
+            }
+        }).catch(() => {});
 
         networks.forEach(net => {
             const card = document.createElement('div');
             card.className = 'network-card';
             card.innerHTML = `
-                <img src="\( {net.logo}" alt=" \){net.name}" class="logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=50 cy=50 r=40 fill=%22%2300f5ff%22/><text x=50 y=58 font-size=%2260%22 text-anchor=%22middle%22 fill=%22white%22>?</text></svg>'">
+                <img src="\( {net.logo}" alt=" \){net.name}" class="logo" 
+                     onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=50 cy=50 r=40 fill=%22%2300f5ff%22/><text x=50 y=58 font-size=%2260%22 text-anchor=%22middle%22 fill=%22white%22>?</text></svg>'">
                 <div class="name">${net.name}</div>
                 <div class="chain-id">Chain ID: ${net.chainId === 'solana' || net.chainId === 'ton' || net.chainId === 'tron' ? '—' : net.chainId}</div>
             `;
@@ -196,9 +219,13 @@
 
         btn.onclick = () => {
             if (selectedNetwork) {
-                // Замените на ваш PHP-скрипт или форму
-                const url = `https://2026createcoin.vercel.app/create.php?network=\( {encodeURIComponent(selectedNetwork.name)}&chainId= \){selectedNetwork.chainId}`;
-                window.location.href = url;
+                // Замените на ваш PHP-скрипт (например, create.php)
+                const params = new URLSearchParams({
+                    network: selectedNetwork.name,
+                    chainId: selectedNetwork.chainId,
+                    rpc: selectedNetwork.rpc
+                });
+                window.location.href = `/create.php?${params}`;
             }
         };
     </script>
