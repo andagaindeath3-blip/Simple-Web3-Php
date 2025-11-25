@@ -3,24 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создать свою криптовалюту</title>
+    <title>Создание Токена Ethereum - dApp</title>
+    
     <style>
-        body { font-family: Arial; text-align: center; margin-top: 50px; background: #f0f2f5; }
-        .card { width: 400px; margin: 0 auto; padding: 30px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; }
-        button { background: #00d4ff; color: white; font-size: 18px; cursor: pointer; border: none; }
-        button:hover { background: #00b0d4; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        .result { margin-top: 20px; padding: 15px; background: #e8f4fc; border-radius: 8px; word-break: break-all; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background-color: #f4f7f6; color: #333; }
+        h1 { color: #007bff; margin-bottom: 5px; }
+        #connectButton { padding: 12px 25px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 8px; transition: background-color 0.3s; }
+        #connectButton:hover { background-color: #0056b3; }
+        #status { margin-top: 25px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; width: 350px; text-align: left; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        #status p { margin: 5px 0; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .note { margin-top: 20px; padding: 10px; background-color: #ffeeba; border: 1px solid #ffcc00; border-radius: 5px; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>Создать свой токен ERC-20</h1>
-        <form id="createForm">
-            <input type="text" id="name" placeholder="Название (MyCoin)" required>
-            <input type="text" id="symbol" placeholder="Символ (MYC)" maxlength="10" required>
-            <input type="number" id="supply" placeholder="Общий объём (например 1000000)" required>
-            <input type="text" id="privateKey" placeholder="Приватный ключ 0x..." required>
+
+    <h1>🚀 Ethereum Токенайзер dApp</h1>
+    <p>Подключите кошелек для доступа к функциям создания и управления токеном ERC-20.</p>
+
+    <button id="connectButton">Подключить кошелек</button>
+
+    <div id="status">
+        <h3>Статус подключения</h3>
+        <p>Статус: <span id="connectionStatus" class="error">Не подключен</span></p>
+        <p>Адрес: <span id="accountAddress">Нет данных</span></p>
+        <p>ID Сети: <span id="chainId">Нет данных</span></p>
+    </div>
+
+    <div class="note">
+        **Важно:** Не забудьте вставить ваш ключ ноды (Infura/Alchemy) в код ниже,
+        чтобы WalletConnect работал корректно!
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+
+    <script>
+        // Глобальные переменные
+        let web3 = null;
+        let provider = null;
+        let selectedAccount = null;
+
+        // Конфигурация Web3Modal
+        const providerOptions = {
+            walletconnect: {
+                package: WalletConnectProvider,
+                options: {
+                    // !!! ВСТАВЬТЕ СЮДА ВАШ КЛЮЧ !!!
+                    infuraId: "ВАШ_INFURA_ID_ИЛИ_КЛЮЧ_ДЛЯ_НОДЫ", 
+                }
+            },
+            injected: {
+                display: {
+                    name: "MetaMask / Injected",
+                    description: "Подключить через браузерное расширение"
+                },
+                package: null
+            }
+        };
+
+        const web3Modal = new Web3Modal.default({
+            cacheProvider: true,
+            providerOptions: providerOptions,
+            theme: "light",
+        });
+
+        const connectButton = document.getElementById('connectButton');
+        connectButton.addEventListener('click', onConnect);
+
+        async function onConnect() {
+            try {
+                provider = await web3Modal.connect();
+                web3 = new Web3(provider);
+
+                const accounts = await web3.eth.getAccounts();
+                selectedAccount = accounts[0];
+                const chainId = await web3.eth.getChainId();
+
+                updateUI(selectedAccount, chainId);
+                subscribeProvider(provider);
+
+            } catch (error) {
+                console.error("Ошибка подключения:", error);
+                document.getElementById('connectionStatus').textContent = 'Ошибка подключения!';
+                document.getElementById('connectionStatus').classList.add('error');
+            }
+        }
+
+        function updateUI(account, chainId) {
+            if (account) {
+                document.getElementById('connectionStatus').textContent = 'Подключен';
+                document.getElementById('connectionStatus').classList.remove('error');
+                document.getElementById('connectionStatus').classList.add('success');
+                document.getElementById('accountAddress').textContent = account.substring(0, 6) + "..." + account.substring(account.length - 4);
+                document.getElementById('chainId').textContent = chainId;
+                connectButton.textContent = 'Отключиться';
+                connectButton.onclick = onDisconnect;
+            }
+        }
+        
+        async function onDisconnect() {
+            if (provider && provider.close) {
+                await provider.close();
+            }
+            await web3Modal.clearCachedProvider();
+            resetUI();
+            provider = null;
+            web3 = null;
+            selectedAccount = null;
+        }
+        
+        function resetUI() {
+            document.getElementById('connectionStatus').textContent = 'Не подключен';
+            document.getElementById('connectionStatus').classList.remove('success', 'error');
+            document.getElementById('connectionStatus').classList.add('error');
+            document.getElementById('accountAddress').textContent = 'Нет данных';
+            document.getElementById('chainId').textContent = 'Нет данных';
+            connectButton.textContent = 'Подключить кошелек';
+            connectButton.onclick = onConnect;
+        }
+
+        function subscribeProvider(provider) {
+            if (!provider.on) return;
             
-            <button type="submit" id="btn
+            // Простая обработка смены состояния
+            provider.on("accountsChanged", () => window.location.reload());
+            provider.on("chainChanged", () => window.location.reload());
+            provider.on("disconnect", () => onDisconnect());
+        }
+        
+        if (web3Modal.cachedProvider) {
+            onConnect();
+        }
+
+    </script>
+
+</body>
+</html>
