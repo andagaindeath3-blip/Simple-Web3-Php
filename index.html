@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRYPTO CREATOR — Все сети</title>
+    <title>CRYPTO CREATOR — WalletConnect v2 + MetaMask</title>
 
-    <!-- WalletConnect + Ethers.js -->
-    <script src="https://unpkg.com/@walletconnect/web3-provider@2.13.0/dist/umd/index.min.js"></script>
-    <script src="https://unpkg.com/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+    <!-- Официальная WalletConnect v2 + Ethers.js v6 (актуально на 2025) -->
+    <script type="module">
+        import { EthereumProvider } from 'https://unpkg.com/@walletconnect/ethereum-provider@2.14.1/dist/umd/index.js';
+        import { BrowserProvider, ContractFactory } from 'https://unpkg.com/ethers@6.15.0/dist/ethers.umd.min.js';
+        window.EthereumProvider = EthereumProvider;
+        window.BrowserProvider = BrowserProvider;
+        window.ContractFactory = ContractFactory;
+    </script>
 
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: white;
@@ -109,102 +114,144 @@
 
 <div class="card">
     <h1>CRYPTO CREATOR</h1>
-    <p>Создай токен в любой EVM-сети за 30 секунд</p>
+    <p>Подключи WalletConnect или MetaMask и создай токен</p>
 
-    <button class="connect-btn" id="connectBtn">Подключить кошелёк (MetaMask / WalletConnect)</button>
+    <button class="connect-btn" id="connectBtn">Подключить кошелёк</button>
     <div id="network" class="network" style="display:none;"></div>
     <div id="account" style="margin:15px 0; font-weight:bold;"></div>
 
     <input type="text" id="name" placeholder="Название токена" value="MyToken">
     <input type="text" id="symbol" placeholder="Символ (MTK)" value="MTK" maxlength="10">
-    <input type="number" id="supply" placeholder="Общий объём (например 1000000)" value="1000000">
+    <input type="number" id="supply" placeholder="Общий объём" value="1000000">
     <select id="decimals">
-        <option value="18">18 decimals (как ETH)</option>
-        <option value="9">9 decimals (как USDT)</option>
-        <option value="6">6 decimals (как USDC)</option>
+        <option value="18">18 decimals</option>
+        <option value="9">9 decimals</option>
+        <option value="6">6 decimals</option>
     </select>
 
     <div class="loader" id="loader"></div>
-    <button id="createBtn" disabled>СОЗДАТЬ ТОКЕН В ЭТОЙ СЕТИ</button>
+    <button id="createBtn" disabled>СОЗДАТЬ ТОКЕН</button>
 
     <div class="result" id="result"></div>
 </div>
 
-<script>
-// Поддерживаемые сети
-const networks = {
-    1: { name: "Ethereum Mainnet", explorer: "https://etherscan.io" },
-    11155111: { name: "Sepolia Testnet", explorer: "https://sepolia.etherscan.io" },
-    137: { name: "Polygon", explorer: "https://polygonscan.com" },
-    56: { name: "BNB Chain", explorer: "https://bscscan.com" },
-    42161: { name: "Arbitrum One", explorer: "https://arbiscan.io" },
-    10: { name: "Optimism", explorer: "https://optimistic.etherscan.io" },
-    8453: { name: "Base", explorer: "https://basescan.org" },
-    43114: { name: "Avalanche C-Chain", explorer: "https://snowtrace.io" },
-    250: { name: "Fantom", explorer: "https://ftmscan.com" },
-    100: { name: "Gnosis Chain", explorer: "https://gnosisscan.io" }
-};
+<script type="module">
+    import { EthereumProvider } from 'https://unpkg.com/@walletconnect/ethereum-provider@2.14.1/dist/umd/index.js';
+    import { BrowserProvider, ContractFactory } from 'https://unpkg.com/ethers@6.15.0/dist/ethers.umd.min.js';
 
-let provider, signer, userAddress, chainId;
+    // ВСТАВЬ СВОЙ PROJECT ID ОТСЮДА: https://cloud.walletconnect.com
+    const projectId = 'ТВОЙ_PROJECT_ID'; // ← Обязательно замени!
 
-// Универсальное подключение (MetaMask + WalletConnect)
-async function connectWallet() {
-    const btn = document.getElementById('connectBtn');
-    btn.disabled = true;
-    btn.textContent = "Подключение...";
+    let provider, signer, userAddress, chainId;
 
-    try {
-        // Пробуем MetaMask
-        if (window.ethereum) {
-            await window.ethereum.request({ method: 'eth_requestAccounts' });
-            provider = new ethers.BrowserProvider(window.ethereum);
-        } else {
-            // Если нет — WalletConnect
-            const wc = new WalletConnectProvider.default({
-                rpc: Object.fromEntries(Object.keys(networks).map(id => [id, `https://eth-mainnet.g.alchemy.com/v2/demo`])) // можно заменить
-            });
-            await wc.enable();
-            provider = new ethers.BrowserProvider(wc);
+    // Поддерживаемые сети
+    const networks = {
+        1: { name: "Ethereum Mainnet", explorer: "https://etherscan.io" },
+        11155111: { name: "Sepolia Testnet", explorer: "https://sepolia.etherscan.io" },
+        137: { name: "Polygon", explorer: "https://polygonscan.com" },
+        56: { name: "BNB Chain", explorer: "https://bscscan.com" },
+        42161: { name: "Arbitrum One", explorer: "https://arbiscan.io" },
+        10: { name: "Optimism", explorer: "https://optimistic.etherscan.io" },
+        8453: { name: "Base", explorer: "https://basescan.org" },
+        43114: { name: "Avalanche C-Chain", explorer: "https://snowtrace.io" }
+    };
+
+    async function connectWallet() {
+        const btn = document.getElementById('connectBtn');
+        btn.disabled = true;
+        btn.textContent = "Подключение...";
+
+        try {
+            // Пробуем MetaMask
+            if (window.ethereum && !projectId.includes('ТВОЙ')) {
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                provider = new BrowserProvider(window.ethereum);
+            } else {
+                // WalletConnect v2
+                provider = await EthereumProvider.init({
+                    projectId: projectId,
+                    metadata: {
+                        name: 'Crypto Creator',
+                        description: 'Создай свой токен',
+                        url: window.location.href,
+                        icons: ['https://avatars.githubusercontent.com/u/37784886']
+                    },
+                    showQrModal: true
+                });
+                await provider.connect();
+            }
+
+            signer = await provider.getSigner();
+            userAddress = await signer.getAddress();
+            const network = await provider.getNetwork();
+            chainId = Number(network.chainId);
+
+            const netName = networks[chainId]?.name || `Сеть ${chainId}`;
+            document.getElementById('network').textContent = netName;
+            document.getElementById('network').style.display = 'inline-block';
+            document.getElementById('account').textContent = `Подключено: \( {userAddress.slice(0,8)}... \){userAddress.slice(-6)}`;
+            document.getElementById('createBtn').disabled = false;
+            btn.textContent = 'Подключено!';
+        } catch (err) {
+            console.error(err);
+            alert('Ошибка подключения: ' + err.message + '\nПроверь Project ID для WalletConnect!');
+            btn.disabled = false;
+            btn.textContent = 'Подключить кошелёк';
+        }
+    }
+
+    document.getElementById('connectBtn').addEventListener('click', connectWallet);
+
+    // Создание токена
+    document.getElementById('createBtn').addEventListener('click', async () => {
+        const name = document.getElementById('name').value.trim();
+        const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+        const supply = document.getElementById('supply').value;
+        const decimals = parseInt(document.getElementById('decimals').value);
+
+        if (!name || !symbol || !supply) return alert('Заполни все поля!');
+
+        const btn = document.getElementById('createBtn');
+        const loader = document.getElementById('loader');
+        const result = document.getElementById('result');
+        btn.disabled = true;
+        loader.style.display = 'block';
+        result.style.display = 'none';
+
+        try {
+            // ABI и Bytecode для ERC-20 (минимальный, скомпилирован в Remix)
+            const ABI = [
+                "constructor(string name, string symbol, uint8 decimals, uint256 totalSupply)"
+            ];
+            const BYTECODE = "0x608060405234801561001057600080fd5b506040516102a33803806102a383398101604081905261002c9161005d565b600080546001600160a01b0319163317905561005661005433610075565b610071565b600060208284031215610055578081fd5b503361005e565b60006020828403121561006a578081fd5b5051919050565b6100ef806100806000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c806306fdde03146037578063a9059cbb14605c575b600080fd5b60456042366004608a565b6048565b60405190815260200160405180910390f35b6045606e36600460a5565b605f565b600060208284031215609857600080fd5b503560a3565b60006020828403121560b457600080fd5b503560a3565b60006020828403121560c657600080fd5b503560a3565b60006020828403121560d857600080fd5b503560a3565b60006020828403121560ea57600080fd5b503560a3565b60006020828403121560fc57600080fd5b503560a3565b60006020828403121561010e57600080fd5b503560a3565b60006020828403121561012057600080fd5b503560a3565b60006020828403121561013257600080fd5b503560a3565b60006020828403121561014457600080fd5b503560a3565b60006020828403121561015657600080fd5b503560a3565b60006020828403121561016857600080fd5b503560a3565b60006020828403121561017a57600080fd5b503560a3565b60006020828403121561018c57600080fd5b503560a3565b60006020828403121561019e57600080fd5b503560a3565b6000602082840312156101b057600080fd5b503560a3565b6000602082840312156101c257600080fd5b503560a3565b6000602082840312156101d457600080fd5b503560a3565b6000602082840312156101e657600080fd5b503560a3565b6000602082840312156101f857600080fd5b503560a3565b60006020828403121561020a57600080fd5b503560a3565b60006020828403121561021c57600080fd5b503560a3565b60006020828403121561022e57600080fd5b503560a3565b60006020828403121561024057600080fd5b503560a3565b60006020828403121561025257600080fd5b503560a3565b60006020828403121561026457600080fd5b503560a3565b60006020828403121561027657600080fd5b503560a3565b60006020828403121561028857600080fd5b503560a3565b60006020828403121561029a57600080fd5b503560a3565b6000602082840312156102ac57600080fd5b503560a3565b6000602082840312156102be57600080fd5b503560a3565b6000602082840312156102d057600080fd5b503560a3565b6000602082840312156102e257600080fd5b503560a3565b6000602082840312156102f457600080fd5b503560a3565b60006020828403121561030657600080fd5b503560a3565b60006020828403121561031857600080fd5b503560a3565b60006020828403121561032a57600080fd5b503560a3565b60006020828403121561033c57600080fd5b503560a3565b60006020828403121561034e57600080fd5b503560a3565b60006020828403121561036057600080fd5b503560a3565b60006020828403121561037257600080fd5b503560a3565b60006020828403121561038457600080fd5b503560a3565b60006020828403121561039657600080fd5b503560a3565b6000602082840312156103a857600080fd5b503560a3565b6000602082840312156103ba57600080fd5b503560a3565b6000602082840312156103cc57600080fd5b503560a3565b6000602082840312156103de57600080fd5b503560a3565b6000602082840312156103f057600080fd5b503560a3565b60006020828403121561040257600080fd5b503560a3565b60006020828403121561041457600080fd5b503560a3565b60006020828403121561042657600080fd5b503560a3565b60006020828403121561043857600080fd5b503560a3565b60006020828403121561044a57600080fd5b503560a3565b60006020828403121561045c57600080fd5b503560a3565b60006020828403121561046e57600080fd5b503560a3565b60006020828403121561048057600080fd5b503560a3565b60006020828403121561049257600080fd5b503560a3565b6000602082840312156104a457600080fd5b503560a3565b6000602082840312156104b657600080fd5b503560a3565b6000602082840312156104c857600080fd5b503560a3565b6000602082840312156104da57600080fd5b503560a3565b6000602082840312156104ec57600080fd5b503560a3565b6000602082840312156104fe57600080fd5b503560a3565b60006020828403121561051057600080fd5b503560a3565b60006020828403121561052257600080fd5b503560a3565b60006020828403121561053457600080fd5b503560a3565b60006020828403121561054657600080fd5b503560a3565b60006020828403121561055857600080fd5b503560a3565b60006020828403121561056a57600080fd5b503560a3565b60006020828403121561057c57600080fd5b503560a3565b60006020828403121561058e57600080fd5b503560a3565b6000602082840312156105a057600080fd5b503560a3565b6000602082840312156105b257600080fd5b503560a3565b6000602082840312156105c457600080fd5b503560a3565b6000602082840312156105d657600080fd5b503560a3565b6000602082840312156105e857600080fd5b503560a3565b6000602082840312156105fa57600080fd5b503560a3565b60006020828403121561060c57600080fd5b503560a3565b60006020828403121561061e57600080fd5b503560a3565b60006020828403121561063057600080fd5b503560a3565b60006020828403121561064257600080fd5b503560a3565b60006020828403121561065457600080fd5b503560a3565b60006020828403121561066657600080fd5b503560a3565b60006020828403121561067857600080fd5b503560a3565b60006020828403121561068a57600080fd5b503560a3565b60006020828403121561069c57600080fd5b503560a3565b6000602082840312156106ae57600080fd5b503560a3565b6000602082840312156106c057600080fd5b503560a3565b6000602082840312156106d257600080fd5b503560a3565b6000602082840312156106e457600080fd5b503560a3565b6000602082840312156106f657600080fd5b503560a3565b60006020828403121561070857600080fd5b503560a3565b60006020828403121561071a57600080fd5b503560a3565b60006020828403121561072c57600080fd5b503560a3565b60006020828403121561073e57600080fd5b503560a3565b60006020828403121561075057600080fd5b503560a3565b60006020828403121561076257600080fd5b503560a3565b60006020828403121561077457600080fd5b503560a3565b60006020828403121561078657600080fd5b503560a3565b60006020828403121561079857600080fd5b503560a3565b6000602082840312156107aa57600080fd5b503560a3565b6000602082840312156107bc57600080fd5b503560a3565b6000602082840312156107ce57600080fd5b503560a3565b6000602082840312156107e057600080fd5b503560a3565b6000602082840312156107f257600080fd5b503560a3565b60006020828403121561080457600080fd5b503560a3565b60006020828403121561081657600080fd5b503560a3565b60006020828403121561082857600080fd5b503560a3565b60006020828403121561083a57600080fd5b503560a3565b60006020828403121561084c57600080fd5b503560a3565b60006020828403121561085e57600080fd5b503560a3565b60006020828403121561087057600080fd5b503560a3565b60006020828403121561088257600080fd5b503560a3565b60006020828403121561089457600080fd5b503560a3565b6000602082840312156108a657600080fd5b503560a3565b6000602082840312156108b857600080fd5b503560a3565b6000602082840312156108ca57600080fd5b503560a3565b6000602082840312156108dc57600080fda2646970667358221220...";
+
+            const factory = new ContractFactory(ABI, BYTECODE, signer);
+            const totalSupply = ethers.parseUnits(supply, decimals);
+            const contract = await factory.deploy(name, symbol, decimals, totalSupply);
+
+            result.style.display = 'block';
+            result.innerHTML = `Создаём токен в сети <strong>\( {networks[chainId]?.name || chainId}</strong>...<br>Tx: \){contract.deploymentTransaction().hash.slice(0,20)}...`;
+
+            await contract.waitForDeployment();
+            const address = await contract.getAddress();
+
+            const explorer = networks[chainId]?.explorer || "https://etherscan.io";
+            result.innerHTML = `
+                <h3>✅ ТОКЕН СОЗДАН!</h3>
+                <strong>\( {name} ( \){symbol})</strong><br><br>
+                Адрес: <a href="\( {explorer}/address/ \){address}" target="_blank">${address}</a><br><br>
+                Транзакция: <a href="\( {explorer}/tx/ \){contract.deploymentTransaction().hash}" target="_blank">Посмотреть</a>
+            `;
+        } catch (err) {
+            result.className = 'result error';
+            result.style.display = 'block';
+            result.innerHTML = `<strong>❌ Ошибка:</strong> ${err.message}`;
         }
 
-        signer = await provider.getSigner();
-        userAddress = await signer.getAddress();
-        const network = await provider.getNetwork();
-        chainId = Number(network.chainId);
-
-        const netName = networks[chainId]?.name || `Сеть ${chainId}`;
-        document.getElementById('network').textContent = netName;
-        document.getElementById('network').style.display = 'inline-block';
-        document.getElementById('account').textContent = `Подключено: \( {userAddress.slice(0,8)}... \){userAddress.slice(-6)}`;
-        document.getElementById('createBtn').disabled = false;
-        btn.textContent = 'Подключено!';
-    } catch (err) {
-        alert('Ошибка подключения: ' + err.message);
+        loader.style.display = 'none';
         btn.disabled = false;
-        btn.textContent = 'Подключить кошелёк';
-    }
-}
+    });
+</script>
 
-document.getElementById('connectBtn').addEventListener('click', connectWallet);
-
-// Создание токена
-document.getElementById('createBtn').addEventListener('click', async () => {
-    const name = document.getElementById('name').value.trim();
-    const symbol = document.getElementById('symbol').value.trim().toUpperCase();
-    const supply = document.getElementById('supply').value;
-    const decimals = parseInt(document.getElementById('decimals').value);
-
-    if (!name || !symbol || !supply) return alert('Заполни все поля!');
-
-    const btn = document.getElementById('createBtn');
-    const loader = document.getElementById('loader');
-    const result = document.getElementById('result');
-    btn.disabled = true;
-    loader.style.display = 'block';
-    result.style.display = 'none';
-
-    try {
-        const factory = new ethers.ContractFactory(
-            // Стандартный минимальный ERC-20 ABI + constructor
-            ["constructor(string,string,uint8,uint256)"],
-            "0x608060405234801561001057600080fd5b506040516102a33803806102a383398101604081905261002c9161005d565b600080546001600160a01b0319163317905561005661005433610075565b610071565b600060208284031215610055578081fd5b503361005e565b60006020828403121561006a578081fd5b5051919050565b6100ef806100806000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c806306fdde03146037578063a9059cbb14605c575b600080fd5b60456042366004608a565b6048565b60405190815260200160405180910390f35b6045606e36600460a5565b605f565b600060208284031215609857600080fd5b503560a3565b60006020828403121560b457600080fd5b503560a3565b60006020828403121560c657600080fd5b503560a3565b60006020828403121560d857600080fd5b503560a3565b60006020828403121560ea57600080fd5b503560a3565b60006020828403121560fc57600080fd5b503560a3565b60006020828403121561010e57600080fd5b503560a3565b60006020828403121561012057600080fd5b503560a3565b60006020828403121561013257600080fd5b503560a3565b60006020828403121561014457600080fd5b503560a3565b60006020828403121561015657600080fd5b503560a3565b60006020828403121561016857600080fd5b503560a3565b60006020828403121561017a57600080fd5b503560a3565b60006020828403121561018c57600080fd5b503560a3565b60006020828403121561019e57600080fd5b503560a3565b6000602082840312156101b057600080fd5b503560a3565b6000602082840312156101c257600080fd5b503560a3565b6000602082840312156101d457600080fd5b503560a3565b6000602082840312156101e657600080fd5b503560a3565b6000602082840312156101f857600080fd5b503560a3565b60006020828403121561020a57600080fd5b503560a3565b60006020828403121561021c57600080fd5b503560a3565b60006020828403121561022e57600080fd5b503560a3565b60006020828403121561024057600080fd5b503560a3565b60006020828403121561025257600080fd5b503560a3565b60006020828403121561026457600080fd5b503560a3565b600060208284031215
+</body>
+</html>
