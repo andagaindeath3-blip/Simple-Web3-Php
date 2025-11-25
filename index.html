@@ -1,82 +1,288 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRYPTO CREATOR 2026 — Создай токен с Simple-Web3-Php</title>
-    <meta name="description" content="Деплой ERC-20 токена в любой EVM-сети через PHP. Интеграция с Simple-Web3-Php.">
-    <style>
-        body { font-family: Arial, sans-serif; background: #0a0a0a; color: #fff; padding: 20px; text-align: center; }
-        form { max-width: 500px; margin: 0 auto; background: #1a1a1a; padding: 30px; border-radius: 10px; }
-        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 5px; }
-        button { background: #00ff88; color: #000; font-weight: bold; cursor: pointer; }
-        #result { margin-top: 20px; padding: 15px; border-radius: 5px; }
-        .success { background: #00ff88; color: #000; }
-        .error { background: #ff4444; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Создать свою криптовалюту за 1 минуту</title>
+  <meta name="description" content="Создай свой токен в Ethereum, Binance Smart Chain, Polygon, Solana, Avalanche и других сетях без кода!"/>
+  
+  <!-- Thirdweb SDK (самый простой и надёжный способ создавать токены) -->
+  <script src="https://cdn.jsdelivr.net/npm/thirdweb@5"></script>
+  
+  <style>
+    :root {
+      --primary: #6366f1;
+      --dark: #0f172a;
+      --light: #f8fafc;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+      color: white;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    header {
+      text-align: center;
+      padding: 4rem 0 2rem;
+    }
+    h1 {
+      font-size: 3.5rem;
+      margin: 0 0 1rem;
+      background: linear-gradient(90deg, #a855f7, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p.subtitle {
+      font-size: 1.3rem;
+      opacity: 0.9;
+    }
+    .card {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 2rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .networks {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .network-btn {
+      padding: 1rem;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .network-btn:hover, .network-btn.active {
+      background: var(--primary);
+      transform: translateY(-4px);
+    }
+    .network-btn img {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 0.5rem;
+    }
+    form {
+      display: grid;
+      gap: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    input, select {
+      padding: 1rem;
+      border-radius: 12px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 1rem;
+    }
+    input::placeholder {
+      color: rgba(255,255,255,0.6);
+    }
+    button {
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #a855f7, #3b82f6);
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(99,102,241,0.4);
+    }
+    .result {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: rgba(34,197,94,0.2);
+      border-radius: 12px;
+      display: none;
+    }
+    footer {
+      text-align: center;
+      padding: 3rem 0;
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+  </style>
 </head>
 <body>
-    <h1>CRYPTO CREATOR</h1>
-    <p>Создай ERC-20 токен в любой сети через Simple-Web3-Php</p>
 
+<div class="container">
+  <header>
+    <h1>Создай свой токен</h1>
+    <p class="subtitle">За 1 минуту · Без кода · В любой сети</p>
+  </header>
+
+  <div class="card">
+    <h2>Выберите блокчейн</h2>
+    <div class="networks">
+      <div class="network-btn active" data-chain="ethereum">
+        <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="Ethereum"/>
+        <div>Ethereum</div>
+      </div>
+      <div class="network-btn" data-chain="polygon">
+        <img src="https://cryptologos.cc/logos/polygon-matic-logo.png" alt="Polygon"/>
+        <div>Polygon</div>
+      </div>
+      <div class="network-btn" data-chain="binance-smart-chain">
+        <img src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png" alt="BSC"/>
+        <div>BSC</div>
+      </div>
+      <div class="network-btn" data-chain="arbitrum">
+        <img src="https://cryptologos.cc/logos/arbitrum-arb-logo.png" alt="Arbitrum"/>
+        <div>Arbitrum</div>
+      </div>
+      <div class="network-btn" data-chain="optimism">
+        <img src="https://cryptologos.cc/logos/optimism-ethereum-op-logo.png" alt="Optimism"/>
+        <div>Optimism</div>
+      </div>
+      <div class="network-btn" data-chain="avalanche">
+        <img src="https://cryptologos.cc/logos/avalanche-avax-logo.png" alt="Avalanche"/>
+        <div>Avalanche</div>
+      </div>
+      <div class="network-btn" data-chain="base">
+        <img src="https://cryptologos.cc/logos/base-base-logo.png" alt="Base"/>
+        <div>Base</div>
+      </div>
+      <div class="network-btn" data-chain="solana">
+        <img src="https://cryptologos.cc/logos/solana-sol-logo.png" alt="Solana"/>
+        <div>Solana</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Настройте токен</h2>
     <form id="tokenForm">
-        <select id="network" required>
-            <option value="ethereum">Ethereum Mainnet</option>
-            <option value="bsc">BNB Smart Chain</option>
-            <option value="polygon">Polygon</option>
-            <option value="arbitrum">Arbitrum</option>
-            <!-- Добавьте больше -->
-        </select>
-        
-        <input type="number" id="supply" placeholder="Initial Supply (e.g., 1000000)" required min="1">
-        
-        <input type="text" id="address" placeholder="Your Wallet Address (0x...)" required>
-        
-        <input type="password" id="privateKey" placeholder="Private Key (0x... — ТЕСТ!)" required>
-        
-        <button type="submit">Создать токен</button>
+      <input type="text" id="name" placeholder="Название токена (например: SHIBA INU)" required />
+      <input type="text" id="symbol" placeholder="Символ (например: SHIB)" maxlength="10" required />
+      <input type="number" id="supply" placeholder="Общий объём (например: 1000000000)" required />
+      <select id="type">
+        <option value="erc20">ERC-20 (Ethereum и совместимые)</option>
+        <option value="spl">SPL (Solana)</option>
+      </select>
+
+      <button type="submit">🚀 Создать токен прямо сейчас</button>
     </form>
 
-    <div id="result"></div>
+    <div id="result" class="result">
+      <h3>Готово! Ваш токен создан 🎉</h3>
+      <p><strong>Адрес контракта:</strong> <span id="contractAddress"></span></p>
+      <p><a id="explorerLink" target="_blank">Открыть в обозревателе блокчейна</a></p>
+      <p>Теперь вы можете добавить токен в MetaMask, Trust Wallet или любую биржу!</p>
+    </div>
+  </div>
+</div>
 
-    <script>
-        document.getElementById('tokenForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = {
-                network: document.getElementById('network').value,
-                supply: document.getElementById('supply').value,
-                address: document.getElementById('address').value,
-                privateKey: document.getElementById('privateKey').value
-            };
-            
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = 'Создаём токен...';
-            resultDiv.className = '';
-            
-            try {
-                const res = await fetch('/api/create.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    resultDiv.innerHTML = `
-                        <h3>✅ Успех!</h3>
-                        <p>Tx Hash: <a href="\( {data.explorer}" target="_blank"> \){data.txHash}</a></p>
-                        <p>Contract Address: ${data.contractAddress}</p>
-                    `;
-                    resultDiv.className = 'success';
-                } else {
-                    resultDiv.innerHTML = `<h3>❌ Ошибка: ${data.error}</h3>`;
-                    resultDiv.className = 'error';
-                }
-            } catch (err) {
-                resultDiv.innerHTML = `<h3>❌ Network Error: ${err.message}</h3>`;
-                resultDiv.className = 'error';
-            }
+<footer>
+  Создано без кода с помощью Thirdweb • 2025
+</footer>
+
+<script>
+  // Поддерживаемые сети через Thirdweb
+  const chains = {
+    ethereum: thirdweb.Ethereum,
+    polygon: thirdweb.Polygon,
+    "binance-smart-chain": thirdweb.Binance,
+    arbitrum: thirdweb.Arbitrum,
+    optimism: thirdweb.Optimism,
+    avalanche: thirdweb.Avalanche,
+    base: thirdweb.Base,
+  };
+
+  let selectedChain = thirdweb.Ethereum;
+
+  // Выбор сети
+  document.querySelectorAll('.network-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.network-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const chainKey = btn.dataset.chain;
+      selectedChain = chains[chainKey] || thirdweb.Ethereum;
+      
+      // Автоматически меняем тип токена для Solana
+      if (chainKey === 'solana') {
+        document.getElementById('type').value = 'spl';
+      } else {
+        document.getElementById('type').value = 'erc20';
+      }
+    });
+  });
+
+  // Обработка формы
+  document.getElementById('tokenForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('name').value;
+    const symbol = document.getElementById('symbol').value.toUpperCase();
+    const supply = document.getElementById('supply').value;
+    const type = document.getElementById('type').value;
+
+    const button = e.target.querySelector('button');
+    button.disabled = true;
+    button.textContent = 'Создаём токен...';
+
+    try {
+      // Подключаем кошелёк (MetaMask или Phantom)
+      const wallet = await thirdweb.connect({
+        clientId: "YOUR_CLIENT_ID", // Можно оставить пустым для теста
+        chain: selectedChain
+      });
+
+      let contractAddress;
+
+      if (type === 'spl' && selectedChain === thirdweb.Solana) {
+        // Создание SPL токена на Solana
+        const tx = await wallet.createToken({
+          name,
+          symbol,
+          totalSupply: supply,
+          decimals: 9
         });
-    </script>
+        contractAddress = tx.tokenAddress;
+      } else {
+        // Создание ERC-20 токена
+        const contract = await wallet.deploy("Token", [
+          name,
+          symbol,
+          Number(supply)
+        ]);
+        contractAddress = contract.address;
+      }
+
+      // Показываем результат
+      document.getElementById('contractAddress').textContent = contractAddress;
+      const explorer = selectedChain === thirdweb.Solana 
+        ? `https://solscan.io/token/${contractAddress}`
+        : `https://\( {selectedChain.chainId === 1 ? '' : 'sepolia.'}etherscan.io/address/ \){contractAddress}`;
+      document.getElementById('explorerLink').href = explorer;
+      document.getElementById('result').style.display = 'block';
+
+    } catch (err) {
+      alert('Ошибка: ' + (err.message || 'Подключите кошелёк и попробуйте снова'));
+      console.error(err);
+    } finally {
+      button.disabled = false;
+      button.textContent = '🚀 Создать токен прямо сейчас';
+    }
+  });
+</script>
+
 </body>
 </html>
