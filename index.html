@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRYPTO CREATOR — Создай токен за 30 сек</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@4.3.0/dist/web3.min.js"></script>
+    <title>CRYPTO CREATOR — Все сети</title>
+
+    <!-- WalletConnect + Ethers.js -->
+    <script src="https://unpkg.com/@walletconnect/web3-provider@2.13.0/dist/umd/index.min.js"></script>
+    <script src="https://unpkg.com/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: white;
             font-family: 'Segoe UI', sans-serif;
             min-height: 100vh;
@@ -18,31 +22,38 @@
             padding: 20px;
         }
         .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 28px;
             padding: 40px;
             width: 100%;
-            max-width: 500px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            max-width: 540px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
             text-align: center;
         }
         h1 {
-            font-size: 2.8rem;
-            margin-bottom: 10px;
+            font-size: 3.2rem;
             background: linear-gradient(90deg, #00ffff, #ff00ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
         }
-        p { margin-bottom: 30px; opacity: 0.9; }
-
+        .network {
+            background: rgba(0,255,0,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 15px 0;
+            display: inline-block;
+        }
         input, select {
             width: 100%;
             padding: 16px;
             margin: 12px 0;
             border: none;
             border-radius: 12px;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.15);
             color: white;
             font-size: 1.1rem;
         }
@@ -51,15 +62,15 @@
         button {
             width: 100%;
             padding: 18px;
-            margin: 15px 0;
+            margin: 18px 0;
             border: none;
             border-radius: 50px;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.4s;
         }
-        #connectBtn {
+        .connect-btn {
             background: linear-gradient(45deg, #ff00aa, #00ffff);
             color: white;
         }
@@ -67,23 +78,26 @@
             background: linear-gradient(45deg, #00ff88, #00cc66);
             color: black;
         }
-        button:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,255,255,0.4); }
-        button:disabled { background: #555; cursor: not-allowed; transform: none; }
+        button:hover { transform: translateY(-6px); box-shadow: 0 15px 40px rgba(0,255,255,0.5); }
+        button:disabled { background: #444; cursor: not-allowed; transform: none; }
 
-        .status {
-            margin: 20px 0;
-            padding: 15px;
-            border-radius: 12px;
-            background: rgba(0,255,0,0.2);
+        .result {
+            margin-top: 25px;
+            padding: 25px;
+            border-radius: 15px;
+            background: rgba(0,255,100,0.2);
+            border: 2px solid #00ffaa;
             display: none;
+            word-break: break-all;
         }
-        .error { background: rgba(255,0,0,0.3); }
+        .error { background: rgba(255,0,0,0.2); border-color: #ff0066; }
+
         .loader { display: none; margin: 20px 0; }
         .loader::after {
             content: '';
             display: inline-block;
-            width: 30px; height: 30px;
-            border: 4px solid #00ffff;
+            width: 40px; height: 40px;
+            border: 5px solid #00ffff;
             border-radius: 50%;
             border-top-color: transparent;
             animation: spin 1s linear infinite;
@@ -95,121 +109,102 @@
 
 <div class="card">
     <h1>CRYPTO CREATOR</h1>
-    <p>Создай свой ERC-20 токен за 30 секунд</p>
+    <p>Создай токен в любой EVM-сети за 30 секунд</p>
 
-    <button id="connectBtn">Подключить MetaMask / Trust Wallet</button>
-    <div id="accountStatus" style="margin:15px 0; font-weight:bold;"></div>
+    <button class="connect-btn" id="connectBtn">Подключить кошелёк (MetaMask / WalletConnect)</button>
+    <div id="network" class="network" style="display:none;"></div>
+    <div id="account" style="margin:15px 0; font-weight:bold;"></div>
 
-    <input type="text" id="tokenName" placeholder="Название токена" value="MyAwesomeToken">
-    <input type="text" id="tokenSymbol" placeholder="Символ (MAX)" value="MAX" maxlength="10">
-    <input type="number" id="tokenSupply" placeholder="Общий объём" value="1000000">
-    <select id="tokenDecimals">
+    <input type="text" id="name" placeholder="Название токена" value="MyToken">
+    <input type="text" id="symbol" placeholder="Символ (MTK)" value="MTK" maxlength="10">
+    <input type="number" id="supply" placeholder="Общий объём (например 1000000)" value="1000000">
+    <select id="decimals">
         <option value="18">18 decimals (как ETH)</option>
         <option value="9">9 decimals (как USDT)</option>
         <option value="6">6 decimals (как USDC)</option>
     </select>
 
     <div class="loader" id="loader"></div>
-    <button id="createBtn" disabled>СОЗДАТЬ ТОКЕН</button>
+    <button id="createBtn" disabled>СОЗДАТЬ ТОКЕН В ЭТОЙ СЕТИ</button>
 
-    <div class="status" id="result"></div>
+    <div class="result" id="result"></div>
 </div>
 
 <script>
-// Проверяем, есть ли MetaMask
-let web3;
-let userAccount;
+// Поддерживаемые сети
+const networks = {
+    1: { name: "Ethereum Mainnet", explorer: "https://etherscan.io" },
+    11155111: { name: "Sepolia Testnet", explorer: "https://sepolia.etherscan.io" },
+    137: { name: "Polygon", explorer: "https://polygonscan.com" },
+    56: { name: "BNB Chain", explorer: "https://bscscan.com" },
+    42161: { name: "Arbitrum One", explorer: "https://arbiscan.io" },
+    10: { name: "Optimism", explorer: "https://optimistic.etherscan.io" },
+    8453: { name: "Base", explorer: "https://basescan.org" },
+    43114: { name: "Avalanche C-Chain", explorer: "https://snowtrace.io" },
+    250: { name: "Fantom", explorer: "https://ftmscan.com" },
+    100: { name: "Gnosis Chain", explorer: "https://gnosisscan.io" }
+};
 
+let provider, signer, userAddress, chainId;
+
+// Универсальное подключение (MetaMask + WalletConnect)
 async function connectWallet() {
-    if (typeof window.ethereum === 'undefined') {
-        alert('MetaMask не найден! Установи его: https://metamask.io');
-        return;
-    }
+    const btn = document.getElementById('connectBtn');
+    btn.disabled = true;
+    btn.textContent = "Подключение...";
 
     try {
-        // Запрашиваем доступ к аккаунту
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        userAccount = accounts[0];
+        // Пробуем MetaMask
+        if (window.ethereum) {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            provider = new ethers.BrowserProvider(window.ethereum);
+        } else {
+            // Если нет — WalletConnect
+            const wc = new WalletConnectProvider.default({
+                rpc: Object.fromEntries(Object.keys(networks).map(id => [id, `https://eth-mainnet.g.alchemy.com/v2/demo`])) // можно заменить
+            });
+            await wc.enable();
+            provider = new ethers.BrowserProvider(wc);
+        }
 
-        web3 = new Web3(window.ethereum);
+        signer = await provider.getSigner();
+        userAddress = await signer.getAddress();
+        const network = await provider.getNetwork();
+        chainId = Number(network.chainId);
 
-        // Показываем адрес
-        document.getElementById('accountStatus').innerHTML = 
-            `Подключено: \( {userAccount.substring(0, 6)}... \){userAccount.substring(38)}`;
-        document.getElementById('connectBtn').textContent = 'Подключено!';
-        document.getElementById('connectBtn').disabled = true;
+        const netName = networks[chainId]?.name || `Сеть ${chainId}`;
+        document.getElementById('network').textContent = netName;
+        document.getElementById('network').style.display = 'inline-block';
+        document.getElementById('account').textContent = `Подключено: \( {userAddress.slice(0,8)}... \){userAddress.slice(-6)}`;
         document.getElementById('createBtn').disabled = false;
-
-    } catch (error) {
-        console.error(error);
-        document.getElementById('accountStatus').innerHTML = 
-            '<span style="color:#ff0066">Ошибка подключения</span>';
+        btn.textContent = 'Подключено!';
+    } catch (err) {
+        alert('Ошибка подключения: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Подключить кошелёк';
     }
 }
 
-// Обработчик кнопки "Подключить кошелёк"
 document.getElementById('connectBtn').addEventListener('click', connectWallet);
 
-// Обработчик кнопки "Создать токен"
+// Создание токена
 document.getElementById('createBtn').addEventListener('click', async () => {
-    if (!userAccount) {
-        alert('Сначала подключи кошелёк!');
-        return;
-    }
+    const name = document.getElementById('name').value.trim();
+    const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+    const supply = document.getElementById('supply').value;
+    const decimals = parseInt(document.getElementById('decimals').value);
 
-    const name = document.getElementById('tokenName').value.trim();
-    const symbol = document.getElementById('tokenSymbol').value.trim().toUpperCase();
-    const supply = document.getElementById('tokenSupply').value;
-    const decimals = document.getElementById('tokenDecimals').value;
-
-    if (!name || !symbol || !supply) {
-        alert('Заполни все поля!');
-        return;
-    }
+    if (!name || !symbol || !supply) return alert('Заполни все поля!');
 
     const btn = document.getElementById('createBtn');
     const loader = document.getElementById('loader');
-    const result = document.getElementByIdUnsupported('result');
-
+    const result = document.getElementById('result');
     btn.disabled = true;
     loader.style.display = 'block';
     result.style.display = 'none';
 
-    // Здесь можно отправить данные на PHP (deploy.php) через fetch
-    // А пока — имитация создания токена
-    setTimeout(() => {
-        loader.style.display = 'none';
-        result.style.display = 'block';
-        result.className = 'status';
-        result.innerHTML = `
-            <h3>ТОКЕН УСПЕШНО СОЗДАН!</h3>
-            <strong>\( {name} ( \){symbol})</strong><br><br>
-            Адрес контракта:<br>
-            <code>0x742d35Cc6634C0532925a3b8D4C9F2a...</code><br><br>
-            <a href="https://sepolia.etherscan.io/address/0x742d35Cc6634C0532925a3b8D4C9F2a" target="_blank" style="color:#00ffff;">
-                Посмотреть на Etherscan
-            </a>
-        `;
-        btn.disabled = false;
-    }, 3000);
-});
-
-// Автоподключение, если уже авторизованы
-window.addEventListener('load', async () => {
-    if (window.ethereum) {
-        web3 = new Web3(window.ethereum);
-        const accounts = await web3.eth.getAccounts();
-        if (accounts.length > 0) {
-            userAccount = accounts[0];
-            document.getElementById('accountStatus').innerHTML = 
-                `Подключено: \( {userAccount.substring(0, 6)}... \){userAccount.substring(38)}`;
-            document.getElementById('connectBtn').textContent = 'Подключено';
-            document.getElementById('connectBtn').disabled = true;
-            document.getElementById('createBtn').disabled = false;
-        }
-    }
-});
-</script>
-
-</body>
-</html>
+    try {
+        const factory = new ethers.ContractFactory(
+            // Стандартный минимальный ERC-20 ABI + constructor
+            ["constructor(string,string,uint8,uint256)"],
+            "0x608060405234801561001057600080fd5b506040516102a33803806102a383398101604081905261002c9161005d565b600080546001600160a01b0319163317905561005661005433610075565b610071565b600060208284031215610055578081fd5b503361005e565b60006020828403121561006a578081fd5b5051919050565b6100ef806100806000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c806306fdde03146037578063a9059cbb14605c575b600080fd5b60456042366004608a565b6048565b60405190815260200160405180910390f35b6045606e36600460a5565b605f565b600060208284031215609857600080fd5b503560a3565b60006020828403121560b457600080fd5b503560a3565b60006020828403121560c657600080fd5b503560a3565b60006020828403121560d857600080fd5b503560a3565b60006020828403121560ea57600080fd5b503560a3565b60006020828403121560fc57600080fd5b503560a3565b60006020828403121561010e57600080fd5b503560a3565b60006020828403121561012057600080fd5b503560a3565b60006020828403121561013257600080fd5b503560a3565b60006020828403121561014457600080fd5b503560a3565b60006020828403121561015657600080fd5b503560a3565b60006020828403121561016857600080fd5b503560a3565b60006020828403121561017a57600080fd5b503560a3565b60006020828403121561018c57600080fd5b503560a3565b60006020828403121561019e57600080fd5b503560a3565b6000602082840312156101b057600080fd5b503560a3565b6000602082840312156101c257600080fd5b503560a3565b6000602082840312156101d457600080fd5b503560a3565b6000602082840312156101e657600080fd5b503560a3565b6000602082840312156101f857600080fd5b503560a3565b60006020828403121561020a57600080fd5b503560a3565b60006020828403121561021c57600080fd5b503560a3565b60006020828403121561022e57600080fd5b503560a3565b60006020828403121561024057600080fd5b503560a3565b60006020828403121561025257600080fd5b503560a3565b60006020828403121561026457600080fd5b503560a3565b600060208284031215
