@@ -1,208 +1,129 @@
-// =========================================================
-// ⚠️ 1. НАСТРОЙКА: ЗАМЕНИТЕ ЭТИ ЗНАЧЕНИЯ НА ВАШИ РЕАЛЬНЫЕ!
-// =========================================================
+const connectButton = document.getElementById('connectWallet');
+const walletAddressDiv = document.getElementById('walletAddress');
+const balanceDiv = document.getElementById('balance');
+const createButton = document.getElementById('createToken');
+const statusDiv = document.getElementById('status');
 
-// 🔴 1.1. ABI (Application Binary Interface) вашего контракта ERC-20.
-// Получается после компиляции контракта Solidity.
-const TOKEN_ABI = [ 
-    // Пример конструктора:
-    "constructor(string name, string symbol, uint256 initialSupply, address owner)",
-    // Добавьте все функции (name, symbol, totalSupply, transfer и т.д.) сюда.
-    // ⚠️ Вставьте свой полный ABI! Этот пример сокращен.
-]; 
+let web3;
+let userAccount;
 
-// 🔴 1.2. BYTECODE (Скомпилированный код) вашего контракта.
-// Начинается с '0x'.
-const TOKEN_BYTECODE = "0x..."; // ⚠️ Вставьте свой полный Bytecode!
+// Бэкенд URL (замени на свой PHP-сервер, интегрированный с Simple-Web3-Php)
+const API_BASE = 'https://твой-домен.com/api'; // Или localhost для теста
 
-// 🔴 1.3. Ваш Project ID от Infura или Alchemy.
-// Нужен для работы WalletConnect.
-const INFURA_PROJECT_ID = "ВАШ_INFURA_PROJECT_ID"; // ⚠️ Вставьте свой ID!
-
-// Сеть для деплоя (5 = Goerli Testnet, 1 = Ethereum Mainnet)
-// 💡 Рекомендуется начинать с тестовой сети (5)
-const TARGET_CHAIN_ID = 5; 
-
-// =========================================================
-// 2. ИНИЦИАЛИЗАЦИЯ И ЭЛЕМЕНТЫ DOM
-// =========================================================
-
-const connectBtn = document.getElementById('connect-btn');
-const deployBtn = document.getElementById('deploy-btn');
-const statusArea = document.getElementById('status-area');
-const walletStatusDiv = document.getElementById('wallet-status');
-const tokenForm = document.getElementById('token-form');
-
-let web3Provider = null;
-let signer = null;
-let walletAddress = null;
-
-// =========================================================
-// 3. ФУНКЦИИ УТИЛИТ
-// =========================================================
-
-function updateStatus(message, isError = false) {
-    statusArea.innerHTML = message;
-    statusArea.style.borderLeftColor = isError ? '#c0392b' : '#627EEA';
-}
-
-function updateWalletStatus(isConnected, address = '') {
-    if (isConnected) {
-        const displayAddress = `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-        walletStatusDiv.innerHTML = `✅ Кошелек подключен: <strong>${displayAddress}</strong>`;
-        walletStatusDiv.classList.remove('disconnected');
-        deployBtn.disabled = false;
-        connectBtn.textContent = "Кошелек подключен";
-        connectBtn.disabled = true;
-    } else {
-        walletStatusDiv.innerHTML = "🔴 Кошелек не подключен.";
-        walletStatusDiv.classList.add('disconnected');
-        deployBtn.disabled = true;
-        connectBtn.textContent = "Подключить кошелек";
-        connectBtn.disabled = false;
-    }
-}
-
-// =========================================================
-// 4. ФУНКЦИИ WALLETCONNECT/METAMASK
-// =========================================================
-
+// Подключение MetaMask
 async function connectWallet() {
+  if (typeof window.ethereum !== 'undefined') {
     try {
-        updateStatus("Подключение...");
-        
-        let providerInstance;
-
-        // Попытка использовать MetaMask (EIP-1193)
-        if (window.ethereum) {
-            providerInstance = window.ethereum;
-            await providerInstance.request({ method: 'eth_requestAccounts' });
-            
-            // Если сеть не совпадает, Ethers.js попытается отправить запрос на смену сети
-            await window.ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: `0x${TARGET_CHAIN_ID.toString(16)}` }],
-            });
-
-        } else {
-            // Использование WalletConnect (для мобильных и других кошельков)
-            if (INFURA_PROJECT_ID === "ВАШ_INFURA_PROJECT_ID") {
-                throw new Error("Необходимо указать INFURA_PROJECT_ID для WalletConnect.");
-            }
-            providerInstance = new WalletConnectProvider.default({
-                infuraId: INFURA_PROJECT_ID,
-                chainId: TARGET_CHAIN_ID,
-                rpc: {
-                    1: `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`, 
-                    5: `https://goerli.infura.io/v3/${INFURA_PROJECT_ID}`, // Тестовая сеть Goerli
-                },
-                qrcode: true,
-            });
-            await providerInstance.enable();
-        }
-
-        web3Provider = new ethers.providers.Web3Provider(providerInstance);
-        signer = web3Provider.getSigner();
-
-        const accounts = await web3Provider.listAccounts();
-        walletAddress = accounts[0];
-
-        // Проверка текущей сети
-        const network = await web3Provider.getNetwork();
-        if (network.chainId !== TARGET_CHAIN_ID) {
-            const chainName = (TARGET_CHAIN_ID === 5) ? 'Goerli Testnet' : 'Mainnet';
-            updateStatus(`🚫 Подключена неверная сеть (${network.chainId}). Переключитесь на ${chainName}.`, true);
-            updateWalletStatus(false);
-            return;
-        }
-
-        updateWalletStatus(true, walletAddress);
-        updateStatus("Кошелек успешно подключен и готов к деплою.");
-
+      web3 = new Web3(window.ethereum);
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      userAccount = accounts[0];
+      
+      walletAddressDiv.innerHTML = `<p>🟢 Подключено: <b>\( {userAccount.slice(0,6)}... \){userAccount.slice(-4)}</b></p>`;
+      connectButton.textContent = '✅ MetaMask подключён';
+      connectButton.disabled = true;
+      
+      // Загружаем баланс
+      updateBalance();
+      
+      // Загружаем статы (опционально, с бэкенда)
+      loadStats();
+      
     } catch (error) {
-        console.error("Ошибка подключения кошелька:", error);
-        updateStatus(`🚫 Ошибка подключения: ${error.message || "Отказано в доступе или неверная сеть."}`, true);
-        updateWalletStatus(false);
+      console.error('Ошибка подключения:', error);
+      statusDiv.textContent = 'Ошибка подключения MetaMask!';
     }
+  } else {
+    alert('Установи MetaMask!');
+  }
 }
 
-// =========================================================
-// 5. ФУНКЦИЯ ДЕПЛОЯ ТОКЕНА
-// =========================================================
+connectButton.addEventListener('click', connectWallet);
 
-async function deployToken(event) {
-    event.preventDefault();
-
-    if (!signer) {
-        updateStatus("Сначала подключите кошелек!", true);
-        return;
-    }
-    if (TOKEN_BYTECODE === "0x..." || TOKEN_ABI.length === 0) {
-        updateStatus("⚠️ Ошибка: Bytecode или ABI не заполнены в app.js.", true);
-        return;
-    }
-    
-    // Получение данных формы
-    const tokenName = document.getElementById('name').value;
-    const tokenSymbol = document.getElementById('symbol').value;
-    const rawSupply = document.getElementById('supply').value;
-    const tokenDecimals = document.getElementById('decimals').value;
-    const ownerAddress = walletAddress; // Делаем владельцем того, кто деплоит
-
-    try {
-        updateStatus("Подготовка параметров токена...");
-        
-        // 1. Конвертация общего предложения в формат BigNumber (с учетом decimals)
-        const initialSupply = ethers.utils.parseUnits(rawSupply, parseInt(tokenDecimals));
-
-        // 2. Создание Factory контракта
-        const TokenFactory = new ethers.ContractFactory(TOKEN_ABI, TOKEN_BYTECODE, signer);
-
-        // 3. Аргументы конструктора: (name, symbol, initialSupply, owner)
-        // ⚠️ Убедитесь, что аргументы совпадают с конструктором вашего Solidity контракта!
-        const constructorArgs = [tokenName, tokenSymbol, initialSupply, ownerAddress];
-
-        updateStatus("Отправка транзакции деплоя. Подтвердите в кошельке...");
-        
-        // 4. Деплой (отправка транзакции)
-        const deployedContract = await TokenFactory.deploy(...constructorArgs);
-
-        updateStatus(`Транзакция отправлена! Хэш: ${deployedContract.deployTransaction.hash}`);
-
-        // 5. Ожидание подтверждения
-        updateStatus("Ожидание подтверждения транзакции (может занять 1-2 минуты)...");
-        await deployedContract.deployed();
-
-        // 6. Успех
-        const explorerUrl = (TARGET_CHAIN_ID === 5) ? 'https://goerli.etherscan.io' : 'https://etherscan.io';
-
-        updateStatus(`
-            🎉 **Токен успешно создан!** 🎉<br>
-            Адрес контракта: 
-            <a href="${explorerUrl}/address/${deployedContract.address}" target="_blank">
-                ${deployedContract.address}
-            </a><br>
-            Хэш транзакции: 
-            <a href="${explorerUrl}/tx/${deployedContract.deployTransaction.hash}" target="_blank">
-                ${deployedContract.deployTransaction.hash}
-            </a><br>
-            <strong>Сеть: ${TARGET_CHAIN_ID === 5 ? 'Goerli Testnet' : 'Mainnet'}</strong>
-        `);
-
-    } catch (error) {
-        console.error("Ошибка при деплое контракта:", error);
-        // Обычно ошибки от кошелька (отмена пользователем, недостаток газа)
-        updateStatus(`🚫 Ошибка деплоя: ${error.reason || "Проверьте консоль для деталей или убедитесь, что у вас достаточно ETH для газа."}`, true);
-    }
+// Обновление баланса ETH
+async function updateBalance() {
+  if (web3 && userAccount) {
+    const balance = await web3.eth.getBalance(userAccount);
+    const ethBalance = web3.utils.fromWei(balance, 'ether');
+    balanceDiv.innerHTML = `<p>Баланс: <b>${ethBalance} ETH</b></p>`;
+  }
 }
 
-// =========================================================
-// 6. ОБРАБОТЧИКИ СОБЫТИЙ
-// =========================================================
+// Загрузка статов (с PHP API)
+async function loadStats() {
+  try {
+    const res = await fetch(`${API_BASE}/stats`);
+    const data = await res.json();
+    document.getElementById('totalTokens').textContent = data.totalTokens || 0;
+    document.getElementById('totalVolume').textContent = `$${data.totalVolume || 0}`;
+    document.getElementById('yourEarnings').textContent = `${data.earnings || 0} ETH`;
+  } catch (e) {
+    console.log('Статы не загружены:', e);
+  }
+}
 
-connectBtn.addEventListener('click', connectWallet);
-tokenForm.addEventListener('submit', deployToken);
+// Создание токена (AJAX на PHP, где Simple-Web3-Php deploy'ит контракт)
+createButton.addEventListener('click', async () => {
+  if (!userAccount) return statusDiv.textContent = 'Сначала подключи MetaMask!';
 
-// Инициализация статуса при загрузке
-updateWalletStatus(false);
-updateStatus("Нажмите 'Подключить кошелек' для начала.");
+  const name = document.getElementById('tokenName').value.trim();
+  const symbol = document.getElementById('tokenSymbol').value.trim().toUpperCase();
+  const supply = document.getElementById('tokenSupply').value;
+  const image = document.getElementById('tokenImage').value;
+  const desc = document.getElementById('tokenDescription').value;
+  const fee = document.getElementById('feePercent').value;
+
+  if (!name || !symbol) {
+    return statusDiv.textContent = 'Заполни название и тикер!';
+  }
+
+  statusDiv.textContent = '⛓️ Создаём ERC20-токен... (это займёт ~30 сек)';
+
+  // Payload для PHP API (Simple-Web3-Php обработает deploy)
+  const payload = {
+    name, symbol, supply: Number(supply), image, description: desc,
+    feePercent: Number(fee),
+    creator: userAccount
+  };
+
+  try {
+    // Сначала MetaMask подтверждает транзу (gas)
+    const gasEstimate = await web3.eth.estimateGas({ from: userAccount });
+    await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{ from: userAccount, gas: gasEstimate }]
+    }); // Это симуляция; в реале подпиши raw tx от PHP
+
+    // AJAX на PHP для deploy
+    const res = await fetch(`${API_BASE}/create-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      statusDiv.innerHTML = `Токен создан! ⛓️<br>
+        <a href="https://etherscan.io/token/\( {data.address}" target="_blank">Адрес: \){data.address.slice(0,10)}...</a><br>
+        <a href="https://dexscreener.com/ethereum/${data.address}" target="_blank">Смотреть на DexScreener</a>`;
+      
+      // Обновляем статы
+      loadStats();
+    } else {
+      statusDiv.textContent = 'Ошибка: ' + data.error;
+    }
+  } catch (e) {
+    statusDiv.textContent = 'Сервер или сеть глючит, пиши в тг — починим 😏';
+    console.error(e);
+  }
+});
+
+// Авто-коннект если MetaMask уже авторизован
+window.addEventListener('load', async () => {
+  if (window.ethereum) {
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if (accounts.length > 0) {
+      connectWallet();
+    }
+  }
+});
