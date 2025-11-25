@@ -6,21 +6,37 @@
     <title>Создание Токена Ethereum - dApp</title>
     
     <style>
+        /* Общие стили */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background-color: #f4f7f6; color: #333; }
         h1 { color: #007bff; margin-bottom: 5px; }
+        
+        /* Стили кнопки подключения */
         #connectButton { padding: 12px 25px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 8px; transition: background-color 0.3s; }
         #connectButton:hover { background-color: #0056b3; }
+        
+        /* Стили статуса */
         #status { margin-top: 25px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; width: 350px; text-align: left; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
         #status p { margin: 5px 0; }
         .success { color: #28a745; font-weight: bold; }
         .error { color: #dc3545; font-weight: bold; }
+        
+        /* Стили формы деплоя */
+        #deployForm { margin-top: 30px; padding: 25px; border: 1px solid #ccc; border-radius: 8px; width: 350px; background-color: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+        #deployForm label { display: block; margin-top: 10px; font-weight: bold; font-size: 14px; }
+        #deployForm input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        #deployButton { margin-top: 20px; padding: 12px; width: 100%; font-size: 16px; cursor: pointer; background-color: #28a745; color: white; border: none; border-radius: 8px; transition: background-color 0.3s; }
+        #deployButton:disabled { background-color: #90c69d; cursor: not-allowed; }
+        #deployButton:hover:not(:disabled) { background-color: #1e7e34; }
+        #deploymentResult { margin-top: 15px; font-size: 14px; word-wrap: break-word; }
+        
+        /* Стили примечаний */
         .note { margin-top: 20px; padding: 10px; background-color: #ffeeba; border: 1px solid #ffcc00; border-radius: 5px; text-align: center; }
     </style>
 </head>
 <body>
 
     <h1>🚀 Ethereum Токенайзер dApp</h1>
-    <p>Подключите кошелек для доступа к функциям создания и управления токеном ERC-20.</p>
+    <p>Шаг 1: Подключите кошелек. Шаг 2: Создайте и разверните свой токен ERC-20.</p>
 
     <button id="connectButton">Подключить кошелек</button>
 
@@ -31,9 +47,25 @@
         <p>ID Сети: <span id="chainId">Нет данных</span></p>
     </div>
 
+    <div id="deployForm">
+        <h2>Создание и Развертывание Токена</h2>
+        <form id="tokenDeployForm">
+            <label for="tokenName">Имя Токена (Name):</label>
+            <input type="text" id="tokenName" value="MyCoin" required>
+            
+            <label for="tokenSymbol">Символ Токена (Symbol):</label>
+            <input type="text" id="tokenSymbol" value="MC" required maxlength="5">
+            
+            <label for="initialSupply">Начальный Запас (Initial Supply):</label>
+            <input type="number" id="initialSupply" value="1000000" required min="1">
+            
+            <button type="submit" id="deployButton" disabled>Развернуть Токен (Deploy)</button>
+        </form>
+        <div id="deploymentResult"></div>
+    </div>
+
     <div class="note">
-        **Важно:** Не забудьте вставить ваш ключ ноды (Infura/Alchemy) в код ниже,
-        чтобы WalletConnect работал корректно!
+        **Важно:** Для **развертывания токена** вам необходимо иметь скомпилированный **ABI** и **байт-код** вашего смарт-контракта ERC-20. Эти данные должны быть добавлены в функцию `deployToken` в секции `<script>`.
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
@@ -41,12 +73,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
     <script>
-        // Глобальные переменные
+        // --- Глобальные переменные ---
         let web3 = null;
         let provider = null;
         let selectedAccount = null;
 
-        // Конфигурация Web3Modal
+        // !!! ВАЖНО: ЗАМЕНИТЕ ЭТИ ПЛЕЙСХОЛДЕРЫ НА ДАННЫЕ ВАШЕГО СМАРТ-КОНТРАКТА !!!
+        const TOKEN_ABI = []; // Здесь должен быть массив ABI вашего токена ERC-20
+        const TOKEN_BYTECODE = "0x..."; // Здесь должен быть байт-код вашего скомпилированного контракта
+
+        // --- Конфигурация Web3Modal (для WalletConnect и MetaMask) ---
         const providerOptions = {
             walletconnect: {
                 package: WalletConnectProvider,
@@ -56,10 +92,7 @@
                 }
             },
             injected: {
-                display: {
-                    name: "MetaMask / Injected",
-                    description: "Подключить через браузерное расширение"
-                },
+                display: { name: "MetaMask / Injected" },
                 package: null
             }
         };
@@ -70,8 +103,17 @@
             theme: "light",
         });
 
+        // --- Элементы DOM ---
         const connectButton = document.getElementById('connectButton');
+        const deployButton = document.getElementById('deployButton');
+        const tokenDeployForm = document.getElementById('tokenDeployForm');
+        const deploymentResult = document.getElementById('deploymentResult');
+
+        // --- Обработчики событий ---
         connectButton.addEventListener('click', onConnect);
+        tokenDeployForm.addEventListener('submit', handleDeployToken);
+
+        // --- ФУНКЦИИ ПОДКЛЮЧЕНИЯ КОШЕЛЬКА ---
 
         async function onConnect() {
             try {
@@ -84,13 +126,32 @@
 
                 updateUI(selectedAccount, chainId);
                 subscribeProvider(provider);
-
+                deployButton.disabled = false; // Активируем кнопку деплоя
             } catch (error) {
                 console.error("Ошибка подключения:", error);
                 document.getElementById('connectionStatus').textContent = 'Ошибка подключения!';
                 document.getElementById('connectionStatus').classList.add('error');
             }
         }
+
+        async function onDisconnect() {
+            if (provider && provider.close) {
+                await provider.close();
+            }
+            await web3Modal.clearCachedProvider();
+            resetUI();
+            deployButton.disabled = true; // Деактивируем кнопку деплоя
+            provider = null; web3 = null; selectedAccount = null;
+        }
+
+        function subscribeProvider(provider) {
+            if (!provider.on) return;
+            provider.on("accountsChanged", () => window.location.reload());
+            provider.on("chainChanged", () => window.location.reload());
+            provider.on("disconnect", () => onDisconnect());
+        }
+
+        // --- ФУНКЦИИ УПРАВЛЕНИЯ UI ---
 
         function updateUI(account, chainId) {
             if (account) {
@@ -104,17 +165,6 @@
             }
         }
         
-        async function onDisconnect() {
-            if (provider && provider.close) {
-                await provider.close();
-            }
-            await web3Modal.clearCachedProvider();
-            resetUI();
-            provider = null;
-            web3 = null;
-            selectedAccount = null;
-        }
-        
         function resetUI() {
             document.getElementById('connectionStatus').textContent = 'Не подключен';
             document.getElementById('connectionStatus').classList.remove('success', 'error');
@@ -125,19 +175,67 @@
             connectButton.onclick = onConnect;
         }
 
-        function subscribeProvider(provider) {
-            if (!provider.on) return;
-            
-            // Простая обработка смены состояния
-            provider.on("accountsChanged", () => window.location.reload());
-            provider.on("chainChanged", () => window.location.reload());
-            provider.on("disconnect", () => onDisconnect());
-        }
-        
+        // Авто-подключение
         if (web3Modal.cachedProvider) {
             onConnect();
         }
 
+        // --- ФУНКЦИЯ РАЗВЕРТЫВАНИЯ ТОКЕНА ---
+
+        async function handleDeployToken(event) {
+            event.preventDefault();
+
+            if (!selectedAccount) {
+                alert("Пожалуйста, сначала подключите кошелек!");
+                return;
+            }
+            
+            if (TOKEN_ABI.length === 0 || TOKEN_BYTECODE === "0x...") {
+                deploymentResult.innerHTML = "<p class='error'>❌ Ошибка: ABI и байт-код токена не настроены в коде.</p>";
+                return;
+            }
+
+            const name = document.getElementById('tokenName').value;
+            const symbol = document.getElementById('tokenSymbol').value;
+            // Переводим начальный запас в Wei, учитывая 18 десятичных знаков (стандарт ERC-20)
+            const initialSupply = document.getElementById('initialSupply').value;
+            const supplyInWei = web3.utils.toWei(initialSupply.toString(), 'ether');
+            
+            try {
+                deployButton.textContent = "Развертывание... (Подтвердите в кошельке)";
+                deployButton.disabled = true;
+                deploymentResult.innerHTML = "<p>⌛ Ожидание подтверждения транзакции в вашем кошельке...</p>";
+
+                // 1. Создаем объект контракта
+                const contract = new web3.eth.Contract(TOKEN_ABI);
+
+                // 2. Отправляем транзакцию развертывания
+                const deployment = contract.deploy({
+                    data: TOKEN_BYTECODE,
+                    // Конструктор контракта токена обычно принимает (name, symbol, initialSupply)
+                    arguments: [name, symbol, supplyInWei] 
+                });
+
+                const newContractInstance = await deployment.send({
+                    from: selectedAccount,
+                    gas: 5000000 // Лимит газа (может потребоваться корректировка)
+                });
+
+                // 3. Успешное развертывание
+                deploymentResult.innerHTML = `
+                    <p class='success'>✅ Токен успешно развернут!</p>
+                    <p>Адрес контракта: <a href="https://etherscan.io/address/${newContractInstance.options.address}" target="_blank">${newContractInstance.options.address}</a></p>
+                    <p>Имя: ${name}, Символ: ${symbol}, Запас: ${initialSupply}</p>
+                `;
+
+            } catch (error) {
+                console.error("Ошибка развертывания:", error);
+                deploymentResult.innerHTML = `<p class='error'>❌ Ошибка развертывания: ${error.message || error.toString()}</p>`;
+            } finally {
+                deployButton.textContent = "Развернуть Токен (Deploy)";
+                deployButton.disabled = false;
+            }
+        }
     </script>
 
 </body>
