@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Multi-Chain Token Creator – BLIP Coin</title>
+    <style>
+        body{font-family:Arial;background:#111;color:#0f0;text-align:center;padding:40px;}
+        h1{font-size:3em;margin:20px;color:#0f9;}
+        .card{background:#1a1a1a;padding:30px;border-radius:15px;display:inline-block;margin:20px;width:90%;max-width:500px;}
+        input,select,button{padding:15px;font-size:1.2em;margin:10px;width:100%;border:none;border-radius:8px;}
+        button{background:#0f9;color:#000;cursor:pointer;}
+        button:hover{background:#9f9;}
+        #result{font-family:monospace;background:#000;padding:15px;border-radius:8px;word-break:break-all;}
+    </style>
+</head>
+<body>
+    <h1>BLIP Multi-Chain Token Creator</h1>
+    <p>Создай токен сразу во всех сетях: Ethereum, Solana, BSC, TON, Polygon</p>
+    
+    <div class="card">
+        <h2>Настройки токена</h2>
+        <input type="text" id="name" placeholder="Название (BLIP Coin)" value="BLIP Coin">
+        <input type="text" id="symbol" placeholder="Символ (BLIP)" value="BLIP">
+        <input type="number" id="supply" placeholder="Общий supply (1e9)" value="1000000000">
+        <select id="networks">
+            <option value="all">Все сети (Multi-Chain)</option>
+            <option value="evm">EVM: Ethereum, BSC, Polygon, Base</option>
+            <option value="solana">Solana (SPL)</option>
+            <option value="ton">TON (Jetton)</option>
+        </select>
+        <button onclick="deployToken()">ДЕПЛОЙ ТОКЕН</button>
+        <div id="result"></div>
+    </div>
+
+    <script src="js/wallet.js"></script>
+    <script>
+        async function deployToken() {
+            const data = {
+                name: document.getElementById('name').value,
+                symbol: document.getElementById('symbol').value,
+                supply: document.getElementById('supply').value,
+                networks: document.getElementById('networks').value
+            };
+
+            // Подключи wallet (MetaMask/Phantom)
+            if (!await connectWallet(data.networks)) {
+                alert('Подключи wallet!');
+                return;
+            }
+
+            const res = await fetch('api/deploy.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            document.getElementById('result').innerHTML = 
+                json.success ? `<span style="color:#0f9">✓ Токен создан! Адреса: ${JSON.stringify(json.addresses)}</span>` 
+                             : `<span style="color:red">Ошибка: ${json.error}</span>`;
+        }
+    </script>
+</body>
+</html>
