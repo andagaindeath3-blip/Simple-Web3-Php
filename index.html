@@ -3,154 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 CREATE COIN — Мгновенно в любой сети</title>
-    <meta name="description" content="Создай свой токен за 30 секунд в Ethereum, BSC, Polygon, Solana, TON и 30+ сетях">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>Token</text></svg>">
-
+    <title>CRYPTO CREATOR 2026 — Создай токен с Simple-Web3-Php</title>
+    <meta name="description" content="Деплой ERC-20 токена в любой EVM-сети через PHP. Интеграция с Simple-Web3-Php.">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Exo+2:wght@300;600&display=swap');
-
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            background: #000;
-            color: #fff;
-            font-family: 'Exo 2', sans-serif;
-            overflow-x: hidden;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        /* Анимированные частицы на фоне */
-        .particles {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 20% 80%, #00ffff20 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, #ff00ff20 0%, transparent 50%);
-            pointer-events: none;
-            animation: float 20s infinite linear;
-        }
-        @keyframes float {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            100% { transform: translate(30px, -30px) rotate(360deg); }
-        }
-
-        .container {
-            text-align: center;
-            z-index: 10;
-            padding: 30px;
-            max-width: 900px;
-        }
-
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 5.5rem;
-            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 40px rgba(0,255,255,0.5);
-            margin-bottom: 20px;
-            animation: glow 3s infinite alternate;
-        }
-        @keyframes glow {
-            from { filter: hue-rotate(0deg); }
-            to { filter: hue-rotate(360deg); }
-        }
-
-        p {
-            font-size: 1.6rem;
-            margin: 25px 0;
-            opacity: 0.9;
-            line-height: 1.5;
-        }
-
-        .networks {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 18px;
-            margin: 50px 0;
-            font-size: 1.3rem;
-        }
-
-        .net {
-            background: rgba(255,255,255,0.07);
-            padding: 12px 22px;
-            border-radius: 50px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,255,255,0.3);
-            transition: all 0.4s;
-        }
-        .net:hover {
-            background: rgba(0,255,255,0.2);
-            transform: translateY(-8px) scale(1.1);
-            box-shadow: 0 10px 30px rgba(0,255,255,0.3);
-        }
-
-        .btn {
-            margin-top: 40px;
-        }
-        .btn a {
-            display: inline-block;
-            background: linear-gradient(45deg, #00ffff, #ff00ff);
-            color: #000;
-            font-weight: bold;
-            font-size: 1.8rem;
-            padding: 20px 60px;
-            border-radius: 60px;
-            text-decoration: none;
-            box-shadow: 0 15px 40px rgba(0,255,255,0.4);
-            transition: all 0.4s;
-        }
-        .btn a:hover {
-            transform: translateY(-10px) scale(1.05);
-            box-shadow: 0 25px 60px rgba(0,255,255,0.6);
-        }
-
-        footer {
-            margin-top: 100px;
-            opacity: 0.6;
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 3.5rem; }
-            p { font-size: 1.3rem; }
-            .btn a { font-size: 1.5rem; padding: 16px 40px; }
-        }
+        body { font-family: Arial, sans-serif; background: #0a0a0a; color: #fff; padding: 20px; text-align: center; }
+        form { max-width: 500px; margin: 0 auto; background: #1a1a1a; padding: 30px; border-radius: 10px; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 5px; }
+        button { background: #00ff88; color: #000; font-weight: bold; cursor: pointer; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+        .success { background: #00ff88; color: #000; }
+        .error { background: #ff4444; }
     </style>
 </head>
 <body>
+    <h1>CRYPTO CREATOR</h1>
+    <p>Создай ERC-20 токен в любой сети через Simple-Web3-Php</p>
 
-    <div class="particles"></div>
+    <form id="tokenForm">
+        <select id="network" required>
+            <option value="ethereum">Ethereum Mainnet</option>
+            <option value="bsc">BNB Smart Chain</option>
+            <option value="polygon">Polygon</option>
+            <option value="arbitrum">Arbitrum</option>
+            <!-- Добавьте больше -->
+        </select>
+        
+        <input type="number" id="supply" placeholder="Initial Supply (e.g., 1000000)" required min="1">
+        
+        <input type="text" id="address" placeholder="Your Wallet Address (0x...)" required>
+        
+        <input type="password" id="privateKey" placeholder="Private Key (0x... — ТЕСТ!)" required>
+        
+        <button type="submit">Создать токен</button>
+    </form>
 
-    <div class="container">
-        <h1>2026 CREATE COIN</h1>
-        <p>Создай свой токен за 30 секунд<br>в любой сети без кода</p>
+    <div id="result"></div>
 
-        <div class="networks">
-            <div class="net">Ethereum</div>
-            <div class="net">BSC</div>
-            <div class="net">Polygon</div>
-            <div class="net">Arbitrum</div>
-            <div class="net">Base</div>
-            <div class="net">Solana</div>
-            <div class="net">TON</div>
-            <div class="net">Avalanche</div>
-            <div class="net">Fantom</div>
-            <div class="net">+30 сетей</div>
-        </div>
-
-        <div class="btn">
-            <a href="create.php">ЗАПУСТИТЬ СОЗДАНИЕ ТОКЕНА</a>
-        </div>
-
-        <footer>
-            © 2026 • Работает на Simple-Web3-Php • Без газа • Мгновенный деплой
-        </footer>
-    </div>
-
+    <script>
+        document.getElementById('tokenForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                network: document.getElementById('network').value,
+                supply: document.getElementById('supply').value,
+                address: document.getElementById('address').value,
+                privateKey: document.getElementById('privateKey').value
+            };
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Создаём токен...';
+            resultDiv.className = '';
+            
+            try {
+                const res = await fetch('/api/create.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <h3>✅ Успех!</h3>
+                        <p>Tx Hash: <a href="\( {data.explorer}" target="_blank"> \){data.txHash}</a></p>
+                        <p>Contract Address: ${data.contractAddress}</p>
+                    `;
+                    resultDiv.className = 'success';
+                } else {
+                    resultDiv.innerHTML = `<h3>❌ Ошибка: ${data.error}</h3>`;
+                    resultDiv.className = 'error';
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<h3>❌ Network Error: ${err.message}</h3>`;
+                resultDiv.className = 'error';
+            }
+        });
+    </script>
 </body>
 </html>
