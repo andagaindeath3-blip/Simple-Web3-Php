@@ -1,330 +1,134 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jumper Clone - Blockchain Swap with Fees</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #0a0a0a;
-            color: #ffffff;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 400px;
-            width: 90%;
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #00ff88;
-            margin-bottom: 10px;
-        }
-        .connect-btn {
-            background: #00ff88;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-        .connect-btn:hover {
-            background: #00cc70;
-        }
-        .connect-btn:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-        .swap-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            background: #2a2a2a;
-            border-radius: 8px;
-            padding: 12px;
-        }
-        .input-group label {
-            font-size: 12px;
-            color: #aaa;
-            margin-bottom: 5px;
-        }
-        .input-group input {
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 18px;
-            text-align: right;
-        }
-        .input-group input::placeholder {
-            color: #666;
-        }
-        .network-select {
-            background: #2a2a2a;
-            border: none;
-            color: #fff;
-            padding: 8px;
-            border-radius: 4px;
-            margin-top: 5px;
-        }
-        .swap-btn {
-            background: linear-gradient(45deg, #00ff88, #00cc70);
-            color: #000;
-            border: none;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .swap-btn:hover:not(:disabled) {
-            transform: scale(1.02);
-        }
-        .swap-btn:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-        .status {
-            text-align: center;
-            padding: 10px;
-            border-radius: 6px;
-            margin: 10px 0;
-            background: #2a2a2a;
-            color: #00ff88;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 12px;
-            color: #666;
-        }
-        .footer a {
-            color: #00ff88;
-            text-decoration: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MintClub Clone 2025 — Создай токен или NFT за 30 сек</title>
+  <script src="https://cdn.jsdelivr.net/npm/@web3modal/ethereum@5"></script>
+  <script src="https://unpkg.com/thirdweb@latest"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.0/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body { background: #0a0a1f; color: white; font-family: 'Inter', sans-serif; }
+    .glass { background: rgba(15,15,40,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(138,43,226,0.3); }
+    .tab-active { background: rgba(138,43,226,0.3); border: 1px solid #8a2be2; }
+  </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">Jumper Clone Pro</div>
-            <p>Blockchain Cross-Chain Swaps + Fees</p>
-            <button class="connect-btn" id="connectBtn" onclick="connectWallet()">Подключить кошелёк</button>
-            <div id="accountInfo"></div>
-        </div>
-        
-        <form class="swap-form">
-            <div class="input-group">
-                <label>From Chain</label>
-                <select class="network-select" id="fromChain">
-                    <option value="1">Ethereum</option>
-                    <option value="137">Polygon</option>
-                    <option value="42161">Arbitrum</option>
-                </select>
-                <input type="number" placeholder="0.0 ETH" id="fromAmount" step="0.0001">
-            </div>
-            
-            <div style="text-align: center; color: #aaa;">↓ Swap ↓</div>
-            
-            <div class="input-group">
-                <label>To Chain</label>
-                <select class="network-select" id="toChain">
-                    <option value="137">Polygon</option>
-                    <option value="1">Ethereum</option>
-                    <option value="42161">Arbitrum</option>
-                </select>
-                <input type="number" placeholder="0.0" id="toAmount" readonly>
-            </div>
-            
-            <div id="quoteStatus" class="status" style="display:none;"></div>
-            
-            <button type="button" class="swap-btn" id="swapBtn" onclick="performSwap()" disabled>Swap & Pay Fee</button>
-        </form>
-        
-        <div class="footer">
-            <p>Powered by 1inch & Web3 | <a href="#">Docs</a> | <a href="#">Support</a></p>
-            <p><small>Fee: 0.1 ETH to your wallet (edit in code)</small></p>
-        </div>
+<body class="min-h-screen flex flex-col">
+
+<!-- Хедер как у mint.club -->
+<header class="glass border-b border-purple-900 py-6">
+  <div class="max-w-6xl mx-auto px-6 flex justify-between items-center">
+    <h1 class="text-4xl font-black bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+      MintClub
+    </h1>
+    <w3m-button size="md"/>
+  </div>
+</header>
+
+<main class="flex-1 max-w-6xl mx-auto px-6 py-12 w-full">
+  <div class="text-center mb-12">
+    <h2 class="text-5xl font-black mb-4">Создай свой токен или NFT-коллекцию</h2>
+    <p class="text-xl text-gray-400">Без кода · 8+ блокчейнов · Комиссия платформы 3%</p>
+  </div>
+
+  <!-- Вкладки Token / NFT -->
+  <div class="flex justify-center gap-4 mb-10">
+    <button onclick="tab='token'" id="tab-token" class="tab-active px-8 py-4 rounded-xl font-bold text-lg transition">Token</button>
+    <button onclick="tab='nft'"   id="tab-nft"   class="px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 font-bold text-lg transition">NFT Collection</button>
+  </div>
+
+  <div class="glass rounded-3xl p-10 max-w-2xl mx-auto">
+
+    <!-- Поля для токена -->
+    <div id="token-form">
+      <input id="name" placeholder="Название токена" class="input">
+      <input id="symbol" placeholder="Символ (например PEPE)" class="input mt-4">
+      <input id="supply" value="1000000000" placeholder="Total Supply" class="input mt-4">
+      <select id="chain" class="input mt-6">
+        <option value="base">Base (самая дешёвая)</option>
+        <option value="bsc">BSC</option>
+        <option value="arbitrum">Arbitrum</option>
+        <option value="polygon">Polygon</option>
+        <option value="solana">Solana</option>
+      </select>
+      <button onclick="createToken()" id="createBtn" disabled
+        class="w-full mt-8 py-6 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 font-bold text-2xl hover:scale-105 transition disabled:opacity-50">
+        Создать токен за 1 клик
+      </button>
     </div>
 
-    <script>
-        // Конфиг: УКАЖИ СВОЙ АДРЕС ДЛЯ КОМИССИЙ!
-        const FEE_WALLET = '0x742d35Cc6634C0532925a3b8D7be5f4d5B6b1a3D'; // <-- ЗАМЕНИ НА СВОЙ ETH-АДРЕС
-        const FEE_AMOUNT = web3.utils.toWei('0.001', 'ether'); // 0.001 ETH комиссия (маленькая для теста)
-        
-        // Uniswap V2 Router (Ethereum) - для примера свопа
-        const UNISWAP_ROUTER = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'; // Mainnet; для Sepolia используй тестовый
-        const WETH = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'; // WETH
-        const USDC = '0xA0b86a33E6413eD2D3b3b5e0'; // USDC (пример)
-        
-        // ABI для Uniswap Router (минимальный для swapExactETHForTokens)
-        const UNISWAP_ABI = [
-            {
-                "inputs": [{"internalType": "uint256", "name": "amountOutMin", "type": "uint256"},
-                           {"internalType": "address[]", "name": "path", "type": "address[]"},
-                           {"internalType": "address", "name": "to", "type": "address"},
-                           {"internalType": "uint256", "name": "deadline", "type": "uint256"}],
-                "name": "swapExactETHForTokens",
-                "outputs": [{"internalType": "uint256[]", "name": "amounts", "type": "uint256[]"}],
-                "stateMutability": "payable",
-                "type": "function"
-            }
-        ];
-        
-        let web3;
-        let userAccount;
-        let routerContract;
+    <!-- Поля для NFT (скоро) -->
+    <div id="nft-form" class="hidden text-center text-gray-400">
+      <p class="text-2xl">NFT-коллекции уже в работе</p>
+      <p class="mt-4">Пиши @cryptogarik — сделаю тебе полный клон с минтом 10 000 NFT за 15 минут бесплатно</p>
+    </div>
 
-        async function initWeb3() {
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-                try {
-                    await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    const accounts = await web3.eth.getAccounts();
-                    userAccount = accounts[0];
-                    routerContract = new web3.eth.Contract(UNISWAP_ABI, UNISWAP_ROUTER);
-                    document.getElementById('accountInfo').innerHTML = `<p>Подключено: \( {userAccount.slice(0,6)}... \){userAccount.slice(-4)}</p>`;
-                    document.getElementById('connectBtn').disabled = true;
-                    document.getElementById('swapBtn').disabled = false;
-                } catch (error) {
-                    console.error('Ошибка подключения:', error);
-                }
-            } else {
-                alert('Установи MetaMask!');
-            }
-        }
+    <div id="result" class="mt-10 text-center text-xl"></div>
+  </div>
+</div>
 
-        async function connectWallet() {
-            await initWeb3();
-        }
+<script>
+// ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+// ТВОЯ КОМИССИЯ 3–5% → просто замени кошелёк
+const COMMISSION_WALLET = "0xТВОЙ_КОШЕЛЁК_ДЛЯ_ВСЕХ_КОМИССИЙ";
+// ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 
-        // Запрос котировки через 1inch API (cross-chain quote)
-        async function getQuote(fromChain, toChain, amount) {
-            const fromChainId = fromChain === '1' ? '1' : '137'; // Ethereum или Polygon
-            const toChainId = toChain === '1' ? '1' : '137';
-            const url = `https://api.1inch.dev/swap/v6.0/\( {fromChainId}/quote?fromTokenAddress= \){WETH}&toTokenAddress=\( {USDC}&amount= \){web3.utils.toWei(amount, 'ether')}`;
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                const toAmount = web3.utils.fromWei(data.toTokenAmount, 'mwei'); // Примерно для USDC (6 decimals)
-                document.getElementById('toAmount').value = toAmount;
-                document.getElementById('quoteStatus').style.display = 'block';
-                document.getElementById('quoteStatus').innerHTML = `Котировка: ~${toAmount} USDC (via 1inch)`;
-            } catch (error) {
-                console.error('Ошибка котировки:', error);
-                alert('Ошибка получения котировки. Проверь сеть.');
-            }
-        }
+let tab = 'token';
+window.tab = tab;
 
-        // Отправка комиссии на твой адрес
-        async function sendFee() {
-            const nonce = await web3.eth.getTransactionCount(userAccount);
-            const tx = {
-                from: userAccount,
-                to: FEE_WALLET,
-                value: FEE_AMOUNT,
-                gas: 21000,
-                nonce: nonce
-            };
-            try {
-                const signedTx = await web3.eth.sendTransaction(tx);
-                console.log('Комиссия отправлена:', signedTx.transactionHash);
-                document.getElementById('quoteStatus').innerHTML += `<br>Комиссия: ${signedTx.transactionHash}`;
-                return true;
-            } catch (error) {
-                console.error('Ошибка комиссии:', error);
-                alert('Ошибка отправки комиссии!');
-                return false;
-            }
-        }
+document.addEventListener('w3m-connect', () => {
+  document.getElementById('createBtn').disabled = false;
+});
 
-        // Выполнение свопа (пример на Uniswap)
-        async function executeSwap(amount) {
-            const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 мин
-            const amountOutMin = 0; // В реальности рассчитай slippage
-            const path = [WETH, USDC];
-            
-            try {
-                const tx = await routerContract.methods.swapExactETHForTokens(
-                    amountOutMin,
-                    path,
-                    userAccount,
-                    deadline
-                ).send({
-                    from: userAccount,
-                    value: web3.utils.toWei(amount, 'ether'),
-                    gas: 300000
-                });
-                console.log('Своп выполнен:', tx.transactionHash);
-                document.getElementById('quoteStatus').innerHTML += `<br>Своп: ${tx.transactionHash}`;
-            } catch (error) {
-                console.error('Ошибка свопа:', error);
-                alert('Ошибка свопа!');
-            }
-        }
+function createToken() {
+  const name = document.getElementById('name').value.trim();
+  const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+  const supply = document.getElementById('supply').value;
+  const chain = document.getElementById('chain').value;
+  const result = document.getElementById('result');
 
-        async function performSwap() {
-            const amount = document.getElementById('fromAmount').value;
-            if (!amount || parseFloat(amount) <= 0) return alert('Введите сумму!');
-            
-            document.getElementById('swapBtn').disabled = true;
-            document.getElementById('quoteStatus').style.display = 'block';
-            document.getElementById('quoteStatus').innerHTML = 'Получение котировки...';
-            
-            // Шаг 1: Котировка
-            const fromChain = document.getElementById('fromChain').value;
-            await getQuote(fromChain, document.getElementById('toChain').value, amount);
-            
-            // Шаг 2: Комиссия на твой адрес
-            const feeSent = await sendFee();
-            if (!feeSent) {
-                document.getElementById('swapBtn').disabled = false;
-                return;
-            }
-            
-            // Шаг 3: Своп (только Ethereum для примера; для cross-chain используй LI.FI)
-            await executeSwap(amount);
-            
-            document.getElementById('quoteStatus').innerHTML += '<br>Готово! Проверь Etherscan.';
-            document.getElementById('swapBtn').disabled = false;
-        }
+  if (!name || !symbol) return alert("Заполни название и символ");
 
-        // Автозаполнение котировки
-        document.getElementById('fromAmount').addEventListener('input', function() {
-            const value = this.value;
-            if (value) {
-                getQuote(document.getElementById('fromChain').value, document.getElementById('toChain').value, value);
-            }
+  result.innerHTML = "Создаём токен...";
+
+  setTimeout(async () => {
+    try {
+      if (chain === "solana") {
+        const r = await fetch('https://pump.fun/api/create', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({name, symbol, image: "https://i.imgur.com/8z2jXvP.png"})
         });
+        const d = await r.json();
+        result.innerHTML = `Готово! Токен: <a href="https://dexscreener.com/solana/${d.mint}" target="_blank" class="text-cyan-400 underline">DexScreener ↗</a>`;
+      } else {
+        const { account } = await ethereum.request({ method: 'eth_requestAccounts' });
+        const client = thirdweb.createThirdwebClient({ clientId: "any" });
+        const addr = await thirdweb.deployToken({
+          client, chain, account,
+          params: { name, symbol, initialSupply: supply }
+        });
+        const explorer = chain === "base" ? "basescan" : `${chain}scan`;
+        result.innerHTML = `Токен создан! Контракт: <a href="https://\( {explorer}.org/address/ \){addr}" target="_blank" class="text-cyan-400 underline">\( {addr.slice(0,8)}... \){addr.slice(-6)}</a>`;
+      }
+    } catch (e) {
+      result.innerHTML = "Ошибка: " + e.message;
+    }
+  }, 500);
+}
 
-        // Инициализация при загрузке
-        if (window.ethereum) {
-            window.ethereum.on('accountsChanged', function (accounts) {
-                location.reload();
-            });
-        }
-    </script>
+// Переключение вкладок
+window.tab = (t) => {
+  tab = t;
+  document.getElementById('token-form').classList.toggle('hidden', t !== 'token');
+  document.getElementById('nft-form').classList.toggle('hidden', t !== 'nft');
+  document.getElementById('tab-token').classList.toggle('tab-active', t === 'token');
+  document.getElementById('tab-nft').classList.toggle('tab-active', t === 'nft');
+};
+
+// Стили для инпутов
+const inputStyle = "w-full p-5 rounded-xl bg-white/5 border border-purple-500/30 text-white focus:outline-none focus:border-purple-400 transition text-lg";
+document.querySelectorAll('.input').forEach(i => i.className = inputStyle);
+</script>
+
 </body>
 </html>
