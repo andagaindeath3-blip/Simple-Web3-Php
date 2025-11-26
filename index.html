@@ -3,195 +3,335 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Token Creator — Создай токен в любой сети</title>
+  <title>Quantum Token Forge — Создание токена в любой сети</title>
+
+  <!-- Ethers + WalletConnect v1 (работает без Project ID) -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
   <style>
-    :root { --accent: #00ff88; --bg: #0a0a1f; --card: rgba(20,20,50,0.95); }
-    body { margin:0; padding:20px; font-family: 'Segoe UI', sans-serif; background:var(--bg); color:white; min-height:100vh; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #1a0033, #000000); }
-    .container { background:var(--card); padding:40px; border-radius:24px; width:90%; max-width:520px; box-shadow:0 20px 60px rgba(0,0,0,0.8); border:2px solid rgba(0,255,136,0.3); text-align:center; }
-    h1 { font-size:2.6em; background:linear-gradient(90deg,#00ff88,#00ccff); -webkit-background-clip:text; color:transparent; margin-bottom:10px; }
-    .subtitle { color:#aaa; margin-bottom:30px; }
-    input, select { width:100%; padding:16px; margin:12px 0; border-radius:16px; border:none; background:#1e1e3a; color:white; font-size:16px; }
-    input::placeholder { color:#777; }
-    button { width:100%; padding:18px; margin:15px 0; background:var(--accent); color:black; border:none; border-radius:16px; font-size:18px; font-weight:bold; cursor:pointer; transition:0.3s; }
-    button:hover:not(:disabled) { background:#00cc70; transform:scale(1.02); }
-    button:disabled { background:#444; cursor:not-allowed; }
-    #status { margin-top:20px; padding:18px; background:#00000088; border-radius:16px; min-height:60px; font-size:15px; line-height:1.5; }
-    .hidden { display:none; }
-    #qr { margin:20px auto; max-width:220px; }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;600&display=swap');
+
+    :root {
+      --bg: #0d001a;
+      --card: rgba(20, 10, 50, 0.7);
+      --accent: #00ff9d;
+      --accent-glow: #00ff9d44;
+      --text: #e0e0ff;
+      --text-muted: #8899ff;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 20% 80%, #00ff9d22 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, #0066ff22 0%, transparent 50%);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .stars {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="white" opacity="0.8"/></svg>') repeat;
+      animation: twinkle 8s infinite;
+    }
+
+    @keyframes twinkle { 0%,100% { opacity: 0.3 } 50% { opacity: 0.8 } }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 560px;
+      margin: 40px auto;
+      padding: 40px;
+      background: var(--card);
+      border-radius: 28px;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(0,255,157,0.3);
+      box-shadow: 0 20px 80px rgba(0,255,157,0.2);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3.2rem;
+      text-align: center;
+      background: linear-gradient(90deg, #00ff9d, #00ccff, #ff00ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--accent);
+      text-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 16px 20px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,255,157,0.4);
+      background: rgba(30,20,80,0.6);
+      color: white;
+      font-size: 16px;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 18px;
+      margin-top: 20px;
+      background: linear-gradient(45deg, #00ff9d, #00cc7a);
+      color: black;
+      font-weight: bold;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.4s;
+      box-shadow: 0 10px 30px rgba(0,255,157,0.4);
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,255,157,0.6);
+    }
+
+    .btn:disabled { background: #333; box-shadow: none; }
+
+    #status {
+      margin-top: 30px;
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.5);
+      min-height: 80px;
+      text-align: center;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0,255,157,0.2);
+    }
+
+    .network-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .net-btn {
+      padding: 14px;
+      border-radius: 16px;
+      background: Rnba(30,20,80,0.5);
+      border: 1px solid rgba(0,255,157,0.3);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+
+    .net-btn:hover, .net-btn.active {
+      background: var(--accent);
+      color: black;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .hidden { display: none; }
+    .glow { text-shadow: 0 0 20px #00ff9d; color: #00ff9d; }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2.4rem; }
+      .container { padding: 20px; margin: 20px; }
+    }
   </style>
 </head>
 <body>
+  <div class="stars"></div>
 
-<div class="container">
-  <h1>Token Creator</h1>
-  <p class="subtitle">Создай свой токен в любой сети за 30 секунд</p>
+  <div class="container">
+    <h1>Quantum Forge</h1>
+    <p class="subtitle">Создание ERC-20 токена в любой сети • 30+ блокчейнов • Все кошельки</p>
 
-  <!-- Подключение кошелька -->
-  <div id="connectSection">
-    <button id="connectBtn">Подключить кошелёк</button>
+    <div id="connectSection">
+      <button id="connectBtn" class="btn">Подключить кошелёк</button>
+    </div>
+
+    <div id="form" class="hidden">
+      <div class="form-group">
+        <label>Выбери сеть</label>
+        <div class="network-grid" id="networks"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Название токена</label>
+        <input type="text" id="name" placeholder="Quantum Token">
+      </div>
+
+      <div class="form-group">
+        <label>Символ (тикер)</label>
+        <input type="text" id="symbol" placeholder="QTM" maxlength="12">
+      </div>
+
+      <div class="form-group">
+        <label>Decimals</label>
+        <input type="number" id="decimals" value="18" min="0" max="18">
+      </div>
+
+      <div class="form-group">
+        <label>Общий supply</label>
+        <input type="number" id="supply" placeholder="1000000000">
+      </div>
+
+      <button id="createBtn" class="btn">Создать токен</button>
+    </div>
+
+    <div id="status">Готов к запуску</div>
   </div>
 
-  <!-- Форма создания токена -->
-  <div id="form" class="hidden">
-    <select id="network">
-      <option value="polygon" selected>Polygon</option>
-      <option value="ethereum">Ethereum</option>
-      <option value="bsc">Binance Smart Chain</option>
-      <option value="arbitrum">Arbitrum</option>
-      <option value="optimism">Optimism</option>
-      <option value="base">Base</option>
-      <option value="avalanche">Avalanche</option>
-      <option value="fantom">Fantom</option>
-      <option value="zksync">zkSync Era</option>
-      <option value="scroll">Scroll</option>
-      <option value="linea">Linea</option>
-      <option value="mantle">Mantle</option>
-      <option value="celo">Celo</option>
-      <option value="moonbeam">Moonbeam</option>
-    </select>
-
-    <input type="text" id="name" placeholder="Название токена (например: My Token)" required>
-    <input type="text" id="symbol" placeholder="Символ (MTK)" maxlength="12" required>
-    <input type="number" id="decimals" value="18" min="0" max="18">
-    <input type="number" id="supply" placeholder="Количество токенов (например: 1000000)" required>
-
-    <button id="createBtn">Создать токен</button>
-  </div>
-
-  <div id="status">Нажмите кнопку выше, чтобы начать</div>
-  <div id="qr" class="hidden"></div>
-</div>
-
-<script>
-  let provider = null;
-  let ethersProvider = null;
-  let userAddress = "";
-
-  // Публичные RPC (работают без ключей)
-  const rpc = {
-    ethereum: "https://eth.llamarpc.com",
-    polygon: "https://polygon-rpc.com",
-    bsc: "https://bsc-dataseed.binance.org",
-    arbitrum: "https://arb1.arbitrum.io/rpc",
-    optimism: "https://mainnet.optimism.io",
-    base: "https://mainnet.base.org",
-    avalanche: "https://api.avax.network/ext/bc/C/rpc",
-    fantom: "https://rpc.ftm.tools",
-    zksync: "https://mainnet.era.zksync.io",
-    scroll: "https://rpc.scroll.io",
-    linea: "https://rpc.linea.build",
-    mantle: "https://rpc.mantle.xyz",
-    celo: "https://forno.celo.org",
-    moonbeam: "https://rpc.api.moonbeam.network"
-  };
-
-  // Подключение кошелька
-  document.getElementById("connectBtn").onclick = async () => {
-    try {
-      document.getElementById("status").innerHTML = "Подключение...";
-
-      // 1. MetaMask / любой injected кошелёк
-      if (window.ethereum) {
-        provider = window.ethereum;
-        await provider.request({ method: "eth_requestAccounts" });
-      } 
-      // 2. WalletConnect (QR-код для мобильных)
-      else {
-        const wc = new WalletConnectProvider({ rpc, qrcode: true });
-        await wc.enable();
-        provider = wc;
-        document.getElementById("qr").innerHTML = "<p>Отсканируйте QR-код в мобильном кошельке</p>";
-        document.getElementById("qr").classList.remove("hidden");
-      }
-
-      ethersProvider = new ethers.providers.Web3Provider(provider);
-      const signer = ethersProvider.getSigner();
-      userAddress = await signer.getAddress();
-
-      document.getElementById("connectSection").classList.add("hidden");
-      document.getElementById("form").classList.remove("hidden");
-      document.getElementById("status").innerHTML = `
-        Подключён: <b>\( {userAddress.slice(0,6)}... \){userAddress.slice(-4)}</b><br>
-        Теперь можно создать токен
-      `;
-    } catch (e) {
-      document.getElementById("status").innerHTML = "Ошибка подключения. Установите MetaMask или используйте мобильный кошелёк.";
-      console.error(e);
-    }
-  };
-
-  // Создание токена
-  document.getElementById("createBtn").onclick = async () => {
-    const network = document.getElementById("network").value;
-    const payload = {
-      network,
-      name: document.getElementById("name").value.trim(),
-      symbol: document.getElementById("symbol").value.trim().toUpperCase(),
-      decimals: parseInt(document.getElementById("decimals").value) || 18,
-      supply: document.getElementById("supply").value,
-      owner: userAddress
+  <script>
+    const networks = {
+      polygon: { name: "Polygon", icon: "Polygon", chainId: 137, rpc: "https://polygon-rpc.com" },
+      ethereum: { name: "Ethereum", icon: "Ethereum", chainId: 1, rpc: "https://eth.llamarpc.com" },
+      bsc: { name: "BSC", icon: "BSC", chainId: 56, rpc: "https://bsc-dataseed.binance.org" },
+      arbitrum: { name: "Arbitrum", icon: "Arbitrum", chainId: 42161, rpc: "https://arb1.arbitrum.io/rpc" },
+      optimism: { name: "Optimism", icon: "Optimism", chainId: 10, rpc: "https://mainnet.optimism.io" },
+      base: { name: "Base", icon: "Base", chainId: 8453, rpc: "https://mainnet.base.org" },
+      avalanche: { name: "Avalanche", icon: "Avalanche", chainId: 43114, rpc: "https://api.avax.network/ext/bc/C/rpc" },
+      fantom: { name: "Fantom", icon: "Fantom", chainId: 250, rpc: "https://rpc.ftm.tools" },
+      zksync: { name: "zkSync Era", icon: "zkSync", chainId: 324, rpc: "https://mainnet.era.zksync.io" },
+      scroll: { name: "Scroll", icon: "Scroll", chainId: 534352, rpc: "https://rpc.scroll.io" },
+      linea: { name: "Linea", icon: "Linea", chainId: 59144, rpc: "https://rpc.linea.build" },
+      mantle: { name: "Mantle", icon: "Mantle", chainId: 5000, rpc: "https://rpc.mantle.xyz" },
+      celo: { name: "Celo", icon: "Celo", chainId: 42220, rpc: "https://forno.celo.org" },
+      moonbeam: { name: "Moonbeam", icon: "Moonbeam", chainId: 1284, rpc: "https://rpc.api.moonbeam.network" }
     };
 
-    if (!payload.name || !payload.symbol || !payload.supply) {
-      alert("Заполните все поля!");
-      return;
-    }
+    let selectedNetwork = "polygon";
+    let provider = null;
+    let userAddress = "";
 
-    document.getElementById("status").innerHTML = "Создаём токен... Это займёт 10–30 секунд";
-    document.getElementById("createBtn").disabled = true;
+    // Генерация кнопок сетей
+    const grid = document.getElementById("networks");
+    Object.entries(networks).forEach(([key, net]) => {
+      const btn = document.createElement("div");
+      btn.className = "net-btn" + (key === selectedNetwork ? " active" : "");
+      btn.innerHTML = net.name;
+      btn.onclick = () => {
+        document.querySelectorAll(".net-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedNetwork = key;
+      };
+      grid.appendChild(btn);
+    });
 
-    try {
-      const res = await fetch("create_token.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
+    document.getElementById("connectBtn").onclick = async () => {
+      try {
+        document.getElementById("status").innerHTML = "<span class='glow'>Подключение...</span>";
 
-      const explorers = {
-        ethereum: "https://etherscan.io",
-        polygon: "https://polygonscan.com",
-        bsc: "https://bscscan.com",
-        arbitrum: "https://arbiscan.io",
-        optimism: "https://optimistic.etherscan.io",
-        base: "https://basescan.org",
-        avalanche: "https://snowtrace.io",
-        fantom: "https://ftmscan.com",
-        zksync: "https://explorer.zksync.io",
-        scroll: "https://scrollscan.com",
-        linea: "https://lineascan.build",
-        mantle: "https://mantlescan.xyz",
-        celo: "https://celoscan.io",
-        moonbeam: "https://moonscan.io"
+        if (window.ethereum) {
+          provider = window.ethereum;
+          await provider.request({ method: "eth_requestAccounts" });
+        } else {
+          const wc = new WalletConnectProvider({
+            rpc: Object.fromEntries(Object.entries(networks).map(([k,v]) => [v.chainId, v.rpc])),
+            qrcode: true
+          });
+          await wc.enable();
+          provider = wc;
+        }
+
+        const ethersProvider = new ethers.providers.Web3Provider(provider);
+        const signer = ethersProvider.getSigner();
+        userAddress = await signer.getAddress();
+
+        document.getElementById("connectSection").classList.add("hidden");
+        document.getElementById("form").classList.remove("hidden");
+        document.getElementById("status").innerHTML = `
+          <span class="glow">Подключён:</span><br>
+          <b>\( {userAddress.slice(0,8)}... \){userAddress.slice(-6)}</b>
+        `;
+      } catch (e) {
+        document.getElementById("status").innerHTML = "Ошибка подключения кошелька";
+      }
+    };
+
+    document.getElementById("createBtn").onclick = async () => {
+      const payload = {
+        network: selectedNetwork,
+        name: document.getElementById("name").value.trim(),
+        symbol: document.getElementById("symbol").value.trim().toUpperCase(),
+        decimals: parseInt(document.getElementById("decimals").value) || 18,
+        supply: document.getElementById("supply").value,
+        owner: userAddress
       };
 
-      if (data.success) {
-        document.getElementById("status").innerHTML = `
-          <div style="color:#00ff88;font-size:18px">
-            ТОКЕН СОЗДАН!<br><br>
-            <b>\( {payload.name} ( \){payload.symbol})</b><br><br>
-            <a href="\( {explorers[network] || "https://polygonscan.com"}/address/ \){data.contractAddress}" 
-               target="_blank" style="color:#00ccff; text-decoration:underline;">
-              Посмотреть контракт
-            </a>
-            \( {data.txHash ? `<br><br><a href=" \){explorers[network] || "https://polygonscan.com"}/tx/${data.txHash}" target="_blank" style="color:#00ccff;">
-              Транзакция
-            </a>` : ""}
-          </div>
-        `;
-      } else {
-        document.getElementById("status").innerHTML = `<span style="color:#ff6b6b">Ошибка:</span> ${data.error || "Неизвестная ошибка"}`;
+      if (!payload.name || !payload.symbol || !payload.supply) {
+        alert("Заполните все поля!");
+        return;
       }
-    } catch (e) {
-      document.getElementById("status").innerHTML = "Сервер недоступен. Проверьте create_token.php";
-    }
 
-    document.getElementById("createBtn").disabled = false;
-  };
-</script>
+      document.getElementById("status").innerHTML = "<span class='glow'>Создание токена...</span>";
+      document.getElementById("createBtn").disabled = true;
 
+      try {
+        const res = await fetch("create_token.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById("status").innerHTML = `
+            <div class="glow" style="font-size:1.4rem">
+              ТОКЕН СОЗДАН!<br><br>
+              <b>\( {payload.name} ( \){payload.symbol})</b><br><br>
+              <a href="https://polygonscan.com/address/${data.contractAddress}" target="_blank" style="color:#00ccff">
+                Посмотреть контракт
+              </a>
+            </div>
+          `;
+        } else {
+          document.getElementById("status").innerHTML = `<span style="color:#ff6b6b">Ошибка:</span> ${data.error}`;
+        }
+      } catch (e) {
+        document.getElementById("status").innerHTML = "Сервер недоступен";
+      }
+
+      document.getElementById("createBtn").disabled = false;
+    };
+  </script>
 </body>
 </html>
