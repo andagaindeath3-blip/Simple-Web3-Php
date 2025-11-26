@@ -1,169 +1,330 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ETHERPAD — ERC20 Launchpad 2025</title>
-  <meta name="description" content="Создай ERC20-токен за 30 секунд • Комиссия 2-5% на твой кошелёк" />
-
-  <!-- Favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛓️</text></svg>">
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-
-  <!-- Web3Modal + WalletConnect + wagmi (CDN 2025) -->
-  <script src="https://unpkg.com/@web3modal/ethereum@2.7.1/dist/index.umd.js"></script>
-  <script src="https://unpkg.com/wagmi@2.12.16/dist/index.umd.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/web3@4.3.0/dist/web3.min.js"></script>
-
-  <style>
-    :root {
-      --bg: #0a0a0f;
-      --card: #1a1a2e;
-      --accent: #6366f1;
-      --accent2: #8b5cf6;
-      --text: #e0e0ff;
-      --text-light: #a0a0cc;
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      background-image: 
-        radial-gradient(circle at 10% 20%, rgba(99,102,241,0.15) 0%, transparent 20%),
-        radial-gradient(circle at 90% 80%, rgba(139,92,246,0.15) 0%, transparent 20%);
-    }
-    header {
-      padding: 2rem 1rem;
-      text-align: center;
-    }
-    h1 {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 4.5rem;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-    .card {
-      background: var(--card);
-      border-radius: 20px;
-      padding: 2rem;
-      margin: 2rem 0;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      border: 1px solid rgba(99,102,241,0.2);
-    }
-    input, textarea, button, select {
-      width: 100%;
-      padding: 1rem;
-      margin: 0.8rem 0;
-      border-radius: 12px;
-      border: none;
-      font-size: 1rem;
-    }
-    input, textarea, select {
-      background: rgba(255,255,255,0.05);
-      color: white;
-      border: 1px solid rgba(99,102,241,0.3);
-    }
-    input::placeholder, textarea::placeholder { color: #777; }
-    button {
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      color: white;
-      font-weight: 800;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(99,102,241,0.4); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin: 2rem 0;
-    }
-    .stat {
-      background: rgba(99,102,241,0.1);
-      padding: 1.5rem;
-      border-radius: 16px;
-      text-align: center;
-    }
-    .stat h3 { font-size: 2rem; color: var(--accent); }
-    footer { text-align:center; padding: 3rem; color: #555; font-size: 0.9rem; }
-    #status { margin-top:1rem; font-weight:600; min-height: 50px; }
-    #walletInfo { display: none; margin-top: 1rem; padding: 1rem; background: rgba(99,102,241,0.1); border-radius: 12px; }
-    .disconnect { background: #f44336 !important; margin-top: 1rem; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jumper Clone - Blockchain Swap with Fees</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 400px;
+            width: 90%;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 10px;
+        }
+        .connect-btn {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .connect-btn:hover {
+            background: #00cc70;
+        }
+        .connect-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .swap-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .input-group label {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            text-align: right;
+        }
+        .input-group input::placeholder {
+            color: #666;
+        }
+        .network-select {
+            background: #2a2a2a;
+            border: none;
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        .swap-btn {
+            background: linear-gradient(45deg, #00ff88, #00cc70);
+            color: #000;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .swap-btn:hover:not(:disabled) {
+            transform: scale(1.02);
+        }
+        .swap-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            background: #2a2a2a;
+            color: #00ff88;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        .footer a {
+            color: #00ff88;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-
-  <header>
-    <h1>ETHERPAD</h1>
-    <p>Создай ERC20-токен за 30 секунд • Комиссия 2-5% на твой кошелёк</p>
-  </header>
-
-  <div class="container">
-
-    <!-- Подключение кошелька -->
-    <div class="card">
-      <div id="walletSection">
-        <button id="connectWalletBtn">Подключить кошелёк (MetaMask, Trust, Ledger, 300+)</button>
-      </div>
-      <div id="walletInfo">
-        <p>Подключено: <b id="walletAddress">0x...</b></p>
-        <p>Сеть: <b id="chainName">—</b></p>
-        <p>Баланс: <b id="balance">0 ETH</b></p>
-        <button id="disconnectWallet" class="disconnect">Отключить кошелёк</button>
-      </div>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Jumper Clone Pro</div>
+            <p>Blockchain Cross-Chain Swaps + Fees</p>
+            <button class="connect-btn" id="connectBtn" onclick="connectWallet()">Подключить кошелёк</button>
+            <div id="accountInfo"></div>
+        </div>
+        
+        <form class="swap-form">
+            <div class="input-group">
+                <label>From Chain</label>
+                <select class="network-select" id="fromChain">
+                    <option value="1">Ethereum</option>
+                    <option value="137">Polygon</option>
+                    <option value="42161">Arbitrum</option>
+                </select>
+                <input type="number" placeholder="0.0 ETH" id="fromAmount" step="0.0001">
+            </div>
+            
+            <div style="text-align: center; color: #aaa;">↓ Swap ↓</div>
+            
+            <div class="input-group">
+                <label>To Chain</label>
+                <select class="network-select" id="toChain">
+                    <option value="137">Polygon</option>
+                    <option value="1">Ethereum</option>
+                    <option value="42161">Arbitrum</option>
+                </select>
+                <input type="number" placeholder="0.0" id="toAmount" readonly>
+            </div>
+            
+            <div id="quoteStatus" class="status" style="display:none;"></div>
+            
+            <button type="button" class="swap-btn" id="swapBtn" onclick="performSwap()" disabled>Swap & Pay Fee</button>
+        </form>
+        
+        <div class="footer">
+            <p>Powered by 1inch & Web3 | <a href="#">Docs</a> | <a href="#">Support</a></p>
+            <p><small>Fee: 0.1 ETH to your wallet (edit in code)</small></p>
+        </div>
     </div>
 
-    <!-- Форма создания токена -->
-    <div class="card">
-      <h2 style="margin-bottom:1rem; color:var(--accent)">Запусти свой ERC20-токен</h2>
-      
-      <input type="text" id="tokenName" placeholder="Название токена (например: PEPE2025)" />
-      <input type="text" id="tokenSymbol" placeholder="Тикер (например: PEPE)" />
-      <input type="number" id="tokenSupply" placeholder="Общий саплай" value="1000000000" />
-      <input type="text" id="tokenImage" placeholder="Ссылка на логотип (https://...)" />
-      <textarea id="tokenDescription" rows="3" placeholder="Описание (не обязательно)"></textarea>
-      
-      <input type="number" id="feePercent" placeholder="Твоя комиссия с каждой сделки (%)" value="3" min="1" max="10" />
+    <script>
+        // Конфиг: УКАЖИ СВОЙ АДРЕС ДЛЯ КОМИССИЙ!
+        const FEE_WALLET = '0x742d35Cc6634C0532925a3b8D7be5f4d5B6b1a3D'; // <-- ЗАМЕНИ НА СВОЙ ETH-АДРЕС
+        const FEE_AMOUNT = web3.utils.toWei('0.001', 'ether'); // 0.001 ETH комиссия (маленькая для теста)
+        
+        // Uniswap V2 Router (Ethereum) - для примера свопа
+        const UNISWAP_ROUTER = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'; // Mainnet; для Sepolia используй тестовый
+        const WETH = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'; // WETH
+        const USDC = '0xA0b86a33E6413eD2D3b3b5e0'; // USDC (пример)
+        
+        // ABI для Uniswap Router (минимальный для swapExactETHForTokens)
+        const UNISWAP_ABI = [
+            {
+                "inputs": [{"internalType": "uint256", "name": "amountOutMin", "type": "uint256"},
+                           {"internalType": "address[]", "name": "path", "type": "address[]"},
+                           {"internalType": "address", "name": "to", "type": "address"},
+                           {"internalType": "uint256", "name": "deadline", "type": "uint256"}],
+                "name": "swapExactETHForTokens",
+                "outputs": [{"internalType": "uint256[]", "name": "amounts", "type": "uint256[]"}],
+                "stateMutability": "payable",
+                "type": "function"
+            }
+        ];
+        
+        let web3;
+        let userAccount;
+        let routerContract;
 
-      <button id="createToken">Создать токен (~0.015 ETH)</button>
-      <div id="status"></div>
-    </div>
+        async function initWeb3() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const accounts = await web3.eth.getAccounts();
+                    userAccount = accounts[0];
+                    routerContract = new web3.eth.Contract(UNISWAP_ABI, UNISWAP_ROUTER);
+                    document.getElementById('accountInfo').innerHTML = `<p>Подключено: \( {userAccount.slice(0,6)}... \){userAccount.slice(-4)}</p>`;
+                    document.getElementById('connectBtn').disabled = true;
+                    document.getElementById('swapBtn').disabled = false;
+                } catch (error) {
+                    console.error('Ошибка подключения:', error);
+                }
+            } else {
+                alert('Установи MetaMask!');
+            }
+        }
 
-    <!-- Статистика -->
-    <div class="stats">
-      <div class="stat">
-        <h3 id="totalTokens">0</h3>
-        <p>Создано токенов</p>
-      </div>
-      <div class="stat">
-        <h3 id="totalVolume">$0</h3>
-        <p>Объём торгов</p>
-      </div>
-      <div class="stat">
-        <h3 id="yourEarnings">0 ETH</h3>
-        <p>Твои комиссии</p>
-      </div>
-    </div>
+        async function connectWallet() {
+            await initWeb3();
+        }
 
-  </div>
+        // Запрос котировки через 1inch API (cross-chain quote)
+        async function getQuote(fromChain, toChain, amount) {
+            const fromChainId = fromChain === '1' ? '1' : '137'; // Ethereum или Polygon
+            const toChainId = toChain === '1' ? '1' : '137';
+            const url = `https://api.1inch.dev/swap/v6.0/\( {fromChainId}/quote?fromTokenAddress= \){WETH}&toTokenAddress=\( {USDC}&amount= \){web3.utils.toWei(amount, 'ether')}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const toAmount = web3.utils.fromWei(data.toTokenAmount, 'mwei'); // Примерно для USDC (6 decimals)
+                document.getElementById('toAmount').value = toAmount;
+                document.getElementById('quoteStatus').style.display = 'block';
+                document.getElementById('quoteStatus').innerHTML = `Котировка: ~${toAmount} USDC (via 1inch)`;
+            } catch (error) {
+                console.error('Ошибка котировки:', error);
+                alert('Ошибка получения котировки. Проверь сеть.');
+            }
+        }
 
-  <footer>
-    EtherPad 2025 — твой личный pump.fun на Ethereum с PHP-бэкендом<br>
-    <span style="color:var(--accent)">Готов к профиту? Пиши @твой_ник</span>
-  </footer>
+        // Отправка комиссии на твой адрес
+        async function sendFee() {
+            const nonce = await web3.eth.getTransactionCount(userAccount);
+            const tx = {
+                from: userAccount,
+                to: FEE_WALLET,
+                value: FEE_AMOUNT,
+                gas: 21000,
+                nonce: nonce
+            };
+            try {
+                const signedTx = await web3.eth.sendTransaction(tx);
+                console.log('Комиссия отправлена:', signedTx.transactionHash);
+                document.getElementById('quoteStatus').innerHTML += `<br>Комиссия: ${signedTx.transactionHash}`;
+                return true;
+            } catch (error) {
+                console.error('Ошибка комиссии:', error);
+                alert('Ошибка отправки комиссии!');
+                return false;
+            }
+        }
 
-  <!-- Подключаем app.js (всё самое вкусное там) -->
-  <script src="app.js"></script>
+        // Выполнение свопа (пример на Uniswap)
+        async function executeSwap(amount) {
+            const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 мин
+            const amountOutMin = 0; // В реальности рассчитай slippage
+            const path = [WETH, USDC];
+            
+            try {
+                const tx = await routerContract.methods.swapExactETHForTokens(
+                    amountOutMin,
+                    path,
+                    userAccount,
+                    deadline
+                ).send({
+                    from: userAccount,
+                    value: web3.utils.toWei(amount, 'ether'),
+                    gas: 300000
+                });
+                console.log('Своп выполнен:', tx.transactionHash);
+                document.getElementById('quoteStatus').innerHTML += `<br>Своп: ${tx.transactionHash}`;
+            } catch (error) {
+                console.error('Ошибка свопа:', error);
+                alert('Ошибка свопа!');
+            }
+        }
+
+        async function performSwap() {
+            const amount = document.getElementById('fromAmount').value;
+            if (!amount || parseFloat(amount) <= 0) return alert('Введите сумму!');
+            
+            document.getElementById('swapBtn').disabled = true;
+            document.getElementById('quoteStatus').style.display = 'block';
+            document.getElementById('quoteStatus').innerHTML = 'Получение котировки...';
+            
+            // Шаг 1: Котировка
+            const fromChain = document.getElementById('fromChain').value;
+            await getQuote(fromChain, document.getElementById('toChain').value, amount);
+            
+            // Шаг 2: Комиссия на твой адрес
+            const feeSent = await sendFee();
+            if (!feeSent) {
+                document.getElementById('swapBtn').disabled = false;
+                return;
+            }
+            
+            // Шаг 3: Своп (только Ethereum для примера; для cross-chain используй LI.FI)
+            await executeSwap(amount);
+            
+            document.getElementById('quoteStatus').innerHTML += '<br>Готово! Проверь Etherscan.';
+            document.getElementById('swapBtn').disabled = false;
+        }
+
+        // Автозаполнение котировки
+        document.getElementById('fromAmount').addEventListener('input', function() {
+            const value = this.value;
+            if (value) {
+                getQuote(document.getElementById('fromChain').value, document.getElementById('toChain').value, value);
+            }
+        });
+
+        // Инициализация при загрузке
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', function (accounts) {
+                location.reload();
+            });
+        }
+    </script>
 </body>
 </html>
