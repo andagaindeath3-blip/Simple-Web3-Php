@@ -1,196 +1,192 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Token Creator — Создай токен за минуту</title>
-
-  <!-- Web3Modal (новая версия, работает без Project ID) -->
-  <script type="module">
-    import { createWeb3Modal, defaultConfig } from 'https://unpkg.com/@web3modal/walletconnect@latest/dist/index.js';
-    
-    const projectId = ''; // Можно оставить пустым — всё равно работает!
-    const metadata = {
-      name: 'Token Creator',
-      description: 'Создание ERC-20 токена',
-      url: window.location.origin,
-      icons: ['https://avatars.githubusercontent.com/u/37784886']
-    };
-
-    const chains = [
-      { chainId: 1, name: 'Ethereum', currency: 'ETH', explorerUrl: 'https://etherscan.io' },
-      { chainId: 137, name: 'Polygon', currency: 'MATIC', explorerUrl: 'https://polygonscan.com' },
-      { chainId: 56, name: 'BSC', currency: 'BNB', explorerUrl: 'https://bscscan.com' },
-      { chainId: 43114, name: 'Avalanche', currency: 'AVAX', explorerUrl: 'https://snowtrace.io' },
-      { chainId: 42161, name: 'Arbitrum', currency: 'ETH', explorerUrl: 'https://arbiscan.io' },
-      { chainId: 10, name: 'Optimism', currency: 'ETH', explorerUrl: 'https://optimistic.etherscan.io' },
-      { chainId: 8453, name: 'Base', currency: 'ETH', explorerUrl: 'https://basescan.org' },
-    ];
-
-    window.w3m = createWeb3Modal({
-      projectId,
-      metadata,
-      chains,
-      themeMode: 'dark',
-      themeVariables: {
-        '--w3m-accent-color': '#00ff9d',
-        '--w3m-background-color': '#1a1a2e'
-      },
-      enableWalletConnect: true,
-      enableInjected: true,  // MetaMask, Trust, Rabby и т.д.
-      enableEmail: false
-    });
-  </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Creator — Создай токен в любой сети</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
   <style>
-    :root { --accent: #00ff9d; --bg: #0f0f1a; --card: rgba(30,30,50,0.95); }
-    body {
-      margin:0; padding:20px; font-family: 'Segoe UI', sans-serif;
-      background: var(--bg); color: white;
-      min-height: 100vh;
-      background-image: radial-gradient(circle at 10% 20%, rgba(0,255,150,0.3) 0%, transparent 20%),
-                        radial-gradient(circle at 90% 80%, rgba(0,200,255,0.3) 0%, transparent 20%);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .container {
-      width: 90%; max-width: 500px; background: var(--card);
-      border-radius: 20px; padding: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-      border: 1px solid rgba(0,255,157,0.3); backdrop-filter: blur(12px);
-    }
-    h1 { text-align:center; font-size:2.4rem; margin-bottom:8px;
-      background: linear-gradient(90deg, #00ff9d, #00d0ff);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .subtitle { text-align:center; color:#aaa; margin-bottom:30px; }
-    label { display:block; margin:20px 0 8px; font-weight:600; }
-    input, select {
-      width:100%; padding:14px; border-radius:12px; border:1px solid rgba(0,255,157,0.3);
-      background:rgba(255,255,255,0.05); color:white; font-size:1rem;
-    }
-    .btn {
-      width:100%; padding:16px; margin-top:25px; background:var(--accent);
-      color:black; font-weight:bold; font-size:1.1rem; border:none;
-      border-radius:12px; cursor:pointer; transition:0.3s;
-    }
-    .btn:hover { background:#00cc7a; }
-    .btn:disabled { background:#555; cursor:not-allowed; }
-    #status {
-      margin-top:20px; padding:16px; border-radius:12px;
-      background:rgba(0,0,0,0.4); text-align:center; min-height:50px;
-    }
+    :root { --accent: #00ff88; --bg: #0a0a1f; --card: rgba(20,20,50,0.95); }
+    body { margin:0; padding:20px; font-family: 'Segoe UI', sans-serif; background:var(--bg); color:white; min-height:100vh; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #1a0033, #000000); }
+    .container { background:var(--card); padding:40px; border-radius:24px; width:90%; max-width:520px; box-shadow:0 20px 60px rgba(0,0,0,0.8); border:2px solid rgba(0,255,136,0.3); text-align:center; }
+    h1 { font-size:2.6em; background:linear-gradient(90deg,#00ff88,#00ccff); -webkit-background-clip:text; color:transparent; margin-bottom:10px; }
+    .subtitle { color:#aaa; margin-bottom:30px; }
+    input, select { width:100%; padding:16px; margin:12px 0; border-radius:16px; border:none; background:#1e1e3a; color:white; font-size:16px; }
+    input::placeholder { color:#777; }
+    button { width:100%; padding:18px; margin:15px 0; background:var(--accent); color:black; border:none; border-radius:16px; font-size:18px; font-weight:bold; cursor:pointer; transition:0.3s; }
+    button:hover:not(:disabled) { background:#00cc70; transform:scale(1.02); }
+    button:disabled { background:#444; cursor:not-allowed; }
+    #status { margin-top:20px; padding:18px; background:#00000088; border-radius:16px; min-height:60px; font-size:15px; line-height:1.5; }
     .hidden { display:none; }
+    #qr { margin:20px auto; max-width:220px; }
   </style>
 </head>
 <body>
 
 <div class="container">
   <h1>Token Creator</h1>
-  <p class="subtitle">Создай свой токен в любой сети</p>
+  <p class="subtitle">Создай свой токен в любой сети за 30 секунд</p>
 
+  <!-- Подключение кошелька -->
   <div id="connectSection">
-    <button id="connectBtn" class="btn">Подключить кошелёк</button>
+    <button id="connectBtn">Подключить кошелёк</button>
   </div>
 
-  <div id="formSection" class="hidden">
-    <label>Сеть</label>
+  <!-- Форма создания токена -->
+  <div id="form" class="hidden">
     <select id="network">
-      <option value="ethereum">Ethereum</option>
       <option value="polygon" selected>Polygon</option>
-      <option value="bsc">BSC</option>
-      <option value="avalanche">Avalanche</option>
+      <option value="ethereum">Ethereum</option>
+      <option value="bsc">Binance Smart Chain</option>
       <option value="arbitrum">Arbitrum</option>
       <option value="optimism">Optimism</option>
       <option value="base">Base</option>
+      <option value="avalanche">Avalanche</option>
+      <option value="fantom">Fantom</option>
+      <option value="zksync">zkSync Era</option>
+      <option value="scroll">Scroll</option>
+      <option value="linea">Linea</option>
+      <option value="mantle">Mantle</option>
+      <option value="celo">Celo</option>
+      <option value="moonbeam">Moonbeam</option>
     </select>
 
-    <label>Название токена</label>
-    <input type="text" id="name" placeholder="My Awesome Token" />
+    <input type="text" id="name" placeholder="Название токена (например: My Token)" required>
+    <input type="text" id="symbol" placeholder="Символ (MTK)" maxlength="12" required>
+    <input type="number" id="decimals" value="18" min="0" max="18">
+    <input type="number" id="supply" placeholder="Количество токенов (например: 1000000)" required>
 
-    <label>Символ</label>
-    <input type="text" id="symbol" placeholder="MAT" maxlength="10" />
-
-    <label>Decimals</label>
-    <input type="number" id="decimals" value="18" min="0" max="18" />
-
-    <label>Supply</label>
-    <input type="number" id="supply" placeholder="1000000" />
-
-    <button id="createBtn" class="btn">Создать токен</button>
+    <button id="createBtn">Создать токен</button>
   </div>
 
-  <div id="status">Нажмите кнопку выше</div>
+  <div id="status">Нажмите кнопку выше, чтобы начать</div>
+  <div id="qr" class="hidden"></div>
 </div>
 
 <script>
   let provider = null;
-  let signer = null;
+  let ethersProvider = null;
   let userAddress = "";
 
-  // Кнопка подключения
+  // Публичные RPC (работают без ключей)
+  const rpc = {
+    ethereum: "https://eth.llamarpc.com",
+    polygon: "https://polygon-rpc.com",
+    bsc: "https://bsc-dataseed.binance.org",
+    arbitrum: "https://arb1.arbitrum.io/rpc",
+    optimism: "https://mainnet.optimism.io",
+    base: "https://mainnet.base.org",
+    avalanche: "https://api.avax.network/ext/bc/C/rpc",
+    fantom: "https://rpc.ftm.tools",
+    zksync: "https://mainnet.era.zksync.io",
+    scroll: "https://rpc.scroll.io",
+    linea: "https://rpc.linea.build",
+    mantle: "https://rpc.mantle.xyz",
+    celo: "https://forno.celo.org",
+    moonbeam: "https://rpc.api.moonbeam.network"
+  };
+
+  // Подключение кошелька
   document.getElementById("connectBtn").onclick = async () => {
     try {
-      // Открываем модальное окно (или подключаемся через MetaMask автоматически)
-      provider = await window.w3m.connect();
+      document.getElementById("status").innerHTML = "Подключение...";
 
-      const ethersProvider = new ethers.BrowserProvider(provider);
-      signer = await ethersProvider.getSigner();
+      // 1. MetaMask / любой injected кошелёк
+      if (window.ethereum) {
+        provider = window.ethereum;
+        await provider.request({ method: "eth_requestAccounts" });
+      } 
+      // 2. WalletConnect (QR-код для мобильных)
+      else {
+        const wc = new WalletConnectProvider({ rpc, qrcode: true });
+        await wc.enable();
+        provider = wc;
+        document.getElementById("qr").innerHTML = "<p>Отсканируйте QR-код в мобильном кошельке</p>";
+        document.getElementById("qr").classList.remove("hidden");
+      }
+
+      ethersProvider = new ethers.providers.Web3Provider(provider);
+      const signer = ethersProvider.getSigner();
       userAddress = await signer.getAddress();
 
       document.getElementById("connectSection").classList.add("hidden");
-      document.getElementById("formSection").classList.remove("hidden");
+      document.getElementById("form").classList.remove("hidden");
       document.getElementById("status").innerHTML = `
-        Подключён: <b>\( {userAddress.slice(0,6)}... \){userAddress.slice(-4)}</b>
+        Подключён: <b>\( {userAddress.slice(0,6)}... \){userAddress.slice(-4)}</b><br>
+        Теперь можно создать токен
       `;
-    } catch (err) {
-      document.getElementById("status").innerHTML = "Подключение отклонено";
-      console.error(err);
+    } catch (e) {
+      document.getElementById("status").innerHTML = "Ошибка подключения. Установите MetaMask или используйте мобильный кошелёк.";
+      console.error(e);
     }
   };
 
   // Создание токена
   document.getElementById("createBtn").onclick = async () => {
-    const data = {
-      network: document.getElementById("network").value,
+    const network = document.getElementById("network").value;
+    const payload = {
+      network,
       name: document.getElementById("name").value.trim(),
       symbol: document.getElementById("symbol").value.trim().toUpperCase(),
-      decimals: parseInt(document.getElementById("decimals").value),
+      decimals: parseInt(document.getElementById("decimals").value) || 18,
       supply: document.getElementById("supply").value,
       owner: userAddress
     };
 
-    if (!data.name || !data.symbol || !data.supply) {
+    if (!payload.name || !payload.symbol || !payload.supply) {
       alert("Заполните все поля!");
       return;
     }
 
-    document.getElementById("status").innerHTML = "Создаём токен...";
+    document.getElementById("status").innerHTML = "Создаём токен... Это займёт 10–30 секунд";
     document.getElementById("createBtn").disabled = true;
 
     try {
       const res = await fetch("create_token.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
-      const json = await res.json();
+      const data = await res.json();
 
-      if (json.success) {
+      const explorers = {
+        ethereum: "https://etherscan.io",
+        polygon: "https://polygonscan.com",
+        bsc: "https://bscscan.com",
+        arbitrum: "https://arbiscan.io",
+        optimism: "https://optimistic.etherscan.io",
+        base: "https://basescan.org",
+        avalanche: "https://snowtrace.io",
+        fantom: "https://ftmscan.com",
+        zksync: "https://explorer.zksync.io",
+        scroll: "https://scrollscan.com",
+        linea: "https://lineascan.build",
+        mantle: "https://mantlescan.xyz",
+        celo: "https://celoscan.io",
+        moonbeam: "https://moonscan.io"
+      };
+
+      if (data.success) {
         document.getElementById("status").innerHTML = `
-          <div style="color:#00ff9d">
-            Токен создан!<br><br>
-            <b>\( {data.name} ( \){data.symbol})</b><br><br>
-            <a href="https://polygonscan.com/address/${json.contractAddress}" target="_blank" style="color:#00d0ff">
+          <div style="color:#00ff88;font-size:18px">
+            ТОКЕН СОЗДАН!<br><br>
+            <b>\( {payload.name} ( \){payload.symbol})</b><br><br>
+            <a href="\( {explorers[network] || "https://polygonscan.com"}/address/ \){data.contractAddress}" 
+               target="_blank" style="color:#00ccff; text-decoration:underline;">
               Посмотреть контракт
             </a>
+            \( {data.txHash ? `<br><br><a href=" \){explorers[network] || "https://polygonscan.com"}/tx/${data.txHash}" target="_blank" style="color:#00ccff;">
+              Транзакция
+            </a>` : ""}
           </div>
         `;
       } else {
-        document.getElementById("status").innerHTML = "Ошибка: " + (json.error || "неизвестно");
+        document.getElementById("status").innerHTML = `<span style="color:#ff6b6b">Ошибка:</span> ${data.error || "Неизвестная ошибка"}`;
       }
     } catch (e) {
-      document.getElementById("status").innerHTML = "Ошибка сервера";
+      document.getElementById("status").innerHTML = "Сервер недоступен. Проверьте create_token.php";
     }
 
     document.getElementById("createBtn").disabled = false;
