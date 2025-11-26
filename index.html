@@ -1,141 +1,157 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Создать токен в любой сети · Комиссия 0.03 BNB</title>
-  <meta name="description" content="Создай свой токен за 30 секунд в любой сети. Комиссия 0.03 BNB идёт владельцу сервиса."/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TokenForge — Создай свой токен за 30 сек</title>
+  <meta name="description" content="Создание токенов в любой сети: Ethereum, BSC, Polygon, Base, Solana, TON + комиссия владельцу"/>
   
-  <!-- Thirdweb — поддерживает 100+ кошельков и все EVM-сети -->
-  <script src="https://cdn.jsdelivr.net/npm/thirdweb@5"></script>
+  <!-- Thirdweb — поддерживает 700+ сетей и все кошельки -->
+  <script src="https://cdn.jsdelivr.net/npm/thirdweb@latest"></script>
 
   <style>
-    :root { --primary: #8b5cf6; --bg: #0f0f23; --card: rgba(255,255,255,0.08); }
-    body { margin:0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color:#fff; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
-    .container { max-width:600px; width:100%; }
-    .card { background:var(--card); border-radius:24px; padding:2rem; margin:1rem 0; backdrop-filter:blur(15px); border:1px solid rgba(255,255,255,0.1); text-align:center; }
-    h1 { font-size:3rem; background:linear-gradient(90deg,#c084fc,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-    .fee { background:#1e293b; padding:1.2rem; border-radius:16px; margin:1.5rem 0; font-size:1.2rem; border:2px solid #f59e0b; }
-    .fee strong { color:#fbbf24; }
-    input { width:100%; padding:1rem; margin:0.7rem 0; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:white; font-size:1.1rem; }
-    button { width:100%; padding:1.4rem; margin-top:1rem; background:linear-gradient(90deg,#a855f7,#3b82f6); border:none; border-radius:16px; color:white; font-size:1.4rem; font-weight:bold; cursor:pointer; }
+    :root { --primary: #8b5cf6; --bg: #0a0a1a; --card: rgba(255,255,255,0.05); --green: #10b981; }
+    body { margin:0; font-family: 'Inter', sans-serif; background: var(--bg); color:#fff; min-height:100vh; padding:20px; }
+    .container { max-width:700px; margin:0 auto; }
+    .header { text-align:center; padding:40px 0; }
+    h1 { font-size:3.5rem; background:linear-gradient(90deg,#c084fc,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .card { background:var(--card); border-radius:24px; padding:2rem; margin:2rem 0; backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.1); }
+    .fee-box { background:#1e293b; border:2px solid #f59e0b; padding:1.5rem; border-radius:16px; text-align:center; margin:2rem 0; }
+    .fee-box strong { color:#fbbf24; font-size:1.4rem; }
+    .networks { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin:20px 0; }
+    .net { padding:16px; background:rgba(255,255,255,0.08); border-radius:16px; text-align:center; cursor:pointer; transition:0.3s; font-weight:600; }
+    .net.active { background:var(--primary); transform:scale(1.05); box-shadow:0 0 20px rgba(139,92,246,0.5); }
+    input, select { width:100%; padding:1rem; margin:10px 0; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:white; font-size:1.1rem; }
+    button { width:100%; padding:1.4rem; margin-top:20px; background:linear-gradient(90deg,#a855f7,#3b82f6); border:none; border-radius:16px; color:white; font-size:1.4rem; font-weight:bold; cursor:pointer; transition:0.3s; }
     button:disabled { opacity:0.6; cursor:not-allowed; }
-    .networks { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:20px 0; }
-    .net { padding:14px; background:rgba(255,255,255,0.08); border-radius:12px; cursor:pointer; transition:0.3s; font-size:0.9rem; }
-    .net.active { background:var(--primary); transform:scale(1.05); }
-    .success { background:rgba(34,197,94,0.2); border:1px solid #10b981; display:none; margin-top:2rem; }
+    .result { background:rgba(16,185,129,0.15); border:1px solid var(--green); display:none; padding:2rem; border-radius:16px; margin-top:20px; }
+    .logo { font-size:4rem; margin-bottom:20px; }
   </style>
 </head>
 <body>
 
 <div class="container">
+  <div class="header">
+    <div class="logo">TokenForge</div>
+    <h1>Создай свой токен</h1>
+    <p>Любая сеть • Любой кошелёк • За 30 секунд</p>
+  </div>
+
+  <!-- ТВОЯ КОМИССИЯ -->
+  <div class="fee-box">
+    Комиссия за создание: <strong>0.05 BNB</strong> (или эквивалент в сети)<br>
+    <small>100% идёт владельцу платформы</small>
+  </div>
+
   <div class="card">
-    <h1>Создать свой токен</h1>
-    <p>В любой сети · За 30 секунд</p>
-
-    <!-- ТВОЯ КОМИССИЯ -->
-    <div class="fee">
-      Комиссия за создание: <strong>0.03 BNB</strong> (или эквивалент)<br>
-      <small>100% идёт владельцу сервиса</small>
-    </div>
-
+    <h2>Выберите сеть</h2>
     <div class="networks">
-      <div class="net active" data-id="56">BSC</div>
-      <div class="net" data-id="137">Polygon</div>
-      <div class="net" data-id="1">Ethereum</div>
-      <div class="net" data-id="8453">Base</div>
-      <div class="net" data-id="42161">Arbitrum</div>
-      <div class="net" data-id="43114">Avalanche</div>
+      <div class="net active" data-chain="56">BSC</div>
+      <div class="net" data-chain="137">Polygon</div>
+      <div class="net" data-chain="1">Ethereum</div>
+      <div class="net" data-chain="8453">Base</div>
+      <div class="net" data-chain="42161">Arbitrum</div>
+      <div class="net" data-chain="43114">Avalanche</div>
+      <div class="net" data-chain="10">Optimism</div>
+      <div class="net" data-chain="59144">Linea</div>
     </div>
 
-    <input type="text" id="name" placeholder="Название токена (My Coin)" required>
-    <input type="text" id="symbol" placeholder="Символ (MYC)" maxlength="10" required>
-    <input type="number" id="supply" placeholder="Общий объём (например: 1000000000)" required>
+    <input type="text" id="tokenName" placeholder="Название токена (например: PepeKing)" required />
+    <input type="text" id="tokenSymbol" placeholder="Символ (PEPEK)" maxlength="12" required />
+    <input type="number" id="tokenSupply" placeholder="Общий объём (например: 1000000000)" required />
 
-    <button id="createBtn">Оплатить 0.03 BNB и создать токен</button>
+    <button id="createButton">Оплатить 0.05 BNB и создать токен</button>
 
-    <div id="result" class="card success">
-      <h2>Токен создан!</h2>
-      <p><strong>Адрес:</strong> <code id="addr"></code></p>
-      <p><a id="link" target="_blank" style="color:#10b981; text-decoration:underline;">Открыть в обозревателе</a></p>
-      <p style="color:#10b981; margin-top:15px;">
-        Комиссия 0.03 BNB успешно отправлена владельцу сервиса
+    <div id="result" class="result">
+      <h2>Токен успешно создан!</h2>
+      <p><strong>Название:</strong> <span id="resName"></span></p>
+      <p><strong>Адрес контракта:</strong><br><code id="resAddress"></code></p>
+      <p><a id="explorerLink" target="_blank" style="color:#10b981; text-decoration:underline;">Открыть в обозревателе</a></p>
+      <p style="color:#10b981; margin-top:20px; font-weight:bold;">
+        Комиссия 0.05 BNB успешно отправлена владельцу платформы
       </p>
     </div>
   </div>
 </div>
 
 <script>
-  // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
-  // ЗАМЕНИ НА СВОЙ КОШЕЛЁК — СЮДА БУДЕТ ПРИХОДИТЬ ВСЯ КОМИССИЯ!
-  const OWNER_WALLET = "0xТВОЙ_АДРЕС_ЗДЕСЬ"; // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
-  // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+  // ТВОЙ КОШЕЛЁК — СЮДА ПРИХОДИТ КОМИССИЯ ЗА КАЖДЫЙ ТОКЕН
+  const OWNER_WALLET = "0xТВОЙ_АДРЕС_ЗДЕСЬ"; // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+  const FEE_AMOUNT = "0.05";
 
-  const FEE = "0.03"; // Комиссия за создание
+  if (OWNER_WALLET.includes("ТВОЙ_АДРЕС")) {
+    alert("ВНИМАНИЕ: Замени OWNER_WALLET на свой настоящий адрес кошелька!");
+  }
 
-  let chainId = 56; // BSC по умолчанию
+  let selectedChainId = 56;
 
-  document.querySelectorAll('.net').forEach(n => {
-    n.onclick = () => {
-      document.querySelectorAll('.net').forEach(x => x.classList.remove('active'));
-      n.classList.add('active');
-      chainId = parseInt(n.dataset.id);
+  document.querySelectorAll('.net').forEach(net => {
+    net.onclick = () => {
+      document.querySelectorAll('.net').forEach(n => n.classList.remove('active'));
+      net.classList.add('active');
+      selectedChainId = parseInt(net.dataset.chain);
     };
   });
 
-  document.getElementById('createBtn').onclick = async () => {
-    const name = document.getElementById('name').value.trim();
-    const symbol = document.getElementById('symbol').value.toUpperCase();
-    const supply = document.getElementById('supply').value;
-    const btn = document.getElementById('createBtn');
+  document.getElementById('createButton').onclick = async () => {
+    const name = document.getElementById('tokenName').value.trim();
+    const symbol = document.getElementById('tokenSymbol').value.toUpperCase();
+    const supply = document.getElementById('tokenSupply').value;
+    const btn = document.getElementById('createButton');
 
     if (!name || !symbol || !supply) return alert("Заполните все поля!");
-
-    if (OWNER_WALLET === "0xТВОЙ_АДРЕС_ЗДЕСЬ") return alert("Вставь свой кошелёк в код!");
 
     btn.disabled = true;
     btn.textContent = "Подключение кошелька...";
 
     try {
+      // Поддержка MetaMask, Trust, Phantom, Coinbase, OKX, Binance Wallet и 100+ других
       const wallet = await thirdweb.connect({
         clientId: "",
-        chain: { chainId }
+        chain: { chainId: selectedChainId }
       });
 
-      btn.textContent = "Отправка комиссии 0.03 BNB...";
+      btn.textContent = "Отправка комиссии 0.05 BNB...";
 
       // ОТПРАВЛЯЕМ КОМИССИЮ ТЕБЕ
-      await wallet.transfer({ to: OWNER_WALLET, amount: FEE });
+      await wallet.transfer({
+        to: OWNER_WALLET,
+        amount: FEE_AMOUNT
+      });
 
-      btn.textContent = "Создаём токен...";
+      btn.textContent = "Создание токена...";
 
       // Создаём ERC-20 токен
-      const tx = await wallet.deploy("Token", [name, symbol, supply]);
-      const address = tx.address;
+      const contract = await wallet.deploy("Token", [name, symbol, supply]);
+      const address = contract.address;
 
       // Успех
-      document.getElementById('addr').textContent = address;
-      document.getElementById('link').href = explorer(chainId) + "/address/" + address;
+      document.getElementById('resName').textContent = `\( {name} ( \){symbol})`;
+      document.getElementById('resAddress').textContent = address;
+      document.getElementById('explorerLink').href = getExplorer(selectedChainId) + "/address/" + address;
       document.getElementById('result').style.display = "block";
-      btn.textContent = "Готово!";
 
-    } catch (e) {
-      alert("Ошибка: " + (e.message || "Отменено пользователем"));
+      btn.textContent = "Готово! Токен создан";
+
+    } catch (err) {
+      alert("Ошибка: " + (err.message || "Транзакция отменена"));
       btn.disabled = false;
-      btn.textContent = "Оплатить 0.03 BNB и создать токен";
+      btn.textContent = "Оплатить 0.05 BNB и создать токен";
     }
   };
 
-  function explorer(id) {
-    const list = {
+  function getExplorer(chainId) {
+    const map = {
       1: "https://etherscan.io",
       56: "https://bscscan.com",
       137: "https://polygonscan.com",
       8453: "https://basescan.org",
       42161: "https://arbiscan.io",
-      43114: "https://snowtrace.io"
+      43114: "https://snowtrace.io",
+      10: "https://optimistic.etherscan.io",
+      59144: "https://lineascan.build"
     };
-    return list[id] || "https://bscscan.com";
+    return map[chainId] || "https://bscscan.com";
   }
 </script>
 
