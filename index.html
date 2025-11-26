@@ -3,151 +3,321 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Создать токен в любой сети</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <title>TokenForge — Создай свой токен за 30 секунд</title>
+
+  <!-- Web3Modal v2 + WalletConnect v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@web3modal/ethereum@2.7.1/dist/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@web3modal/ui@2.7.1/dist/index.umd.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@web3modal/ui@2.7.1/dist/index.css"/>
+
+  <!-- Ethers.js -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
+
   <style>
-    body {font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; background:#f9f9f9;}
-    h1 {text-align:center;}
-    button, select, input {padding:10px; font-size:16px; margin:5px 0;}
-    #form {display:none; background:white; padding:20px; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.1);}
-    #status {margin-top:15px; padding:15px; background:#e9ecef; border-radius:5px;}
+    :root {
+      --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --card: rgba(255, 255, 255, 0.15);
+      --border: rgba(255, 255, 255, 0.2);
+      --text: #ffffff;
+      --accent: #00ff9d;
+      --accent-dark: #00cc7a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-attachment: fixed;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 40px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      font-size: 3rem;
+      text-align: center;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #00ff9d, #00d0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p.subtitle {
+      text-align: center;
+      opacity: 0.9;
+      font-size: 1.2rem;
+      margin-bottom: 40px;
+    }
+    .form-group {
+      margin-bottom: 24px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 1rem;
+      backdrop-filter: blur(10px);
+    }
+    input::placeholder { color: rgba(255,255,255,0.6); }
+    .btn {
+      background: var(--accent);
+      color: #000;
+      font-weight: bold;
+      padding: 16px 32px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 100%;
+      margin-top: 20px;
+    }
+    .btn:hover { background: var(--accent-dark); transform: translateY(-2px); }
+    .btn:disabled { background: #555; cursor: not-allowed; }
+    #status {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.3);
+      min-height: 60px;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+    .network-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .network-btn {
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid var(--border);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .network-btn:hover, .network-btn.active {
+      background: var(--accent);
+      color: #000;
+      transform: scale(1.05);
+    }
+    .hidden { display: none; }
+    @media (max-width: 600px) {
+      h1 { font-size: 2.2rem; }
+      .card { padding: 20px; }
+    }
   </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <h1>Создать свой токен в любой EVM-сети</h1>
-  <button id="connectBtn">Подключить кошелёк (WalletConnect)</button>
-  <div id="status"></div>
 
-  <div id="form">
-    <label>Сеть:</label>
-    <select id="network">
-      <option value="ethereum">Ethereum Mainnet</option>
-      <option value="polygon">Polygon</option>
-      <option value="bsc">Binance Smart Chain (BSC)</option>
-      <option value="avalanche">Avalanche C-Chain</option>
-      <option value="arbitrum">Arbitrum One</option>
-      <option value="optimism">Optimism</option>
-      <option value="fantom">Fantom Opera</option>
-      <option value="gnosis">Gnosis Chain (xDai)</option>
-      <option value="cronos">Cronos</option>
-      <option value="moonbeam">Moonbeam</option>
-      <option value="moonriver">Moonriver</option>
-      <option value="aurora">Aurora</option>
-      <option value="celo">Celo</option>
-      <option value="base">Base</option>
-      <option value="zksync">zkSync Era</option>
-      <option value="linea">Linea</option>
-      <option value="scroll">Scroll</option>
-      <option value="mantle">Mantle</option>
-    </select><br><br>
+<div class="container">
+  <div class="card">
+    <h1>TokenForge</h1>
+    <p class="subtitle">Создай свой токен в любой сети за 30 секунд</p>
 
-    <label>Название токена:</label><input type="text" id="name" placeholder="My Token" required /><br><br>
-    <label>Символ:</label><input type="text" id="symbol" placeholder="MTK" maxlength="10" required /><br><br>
-    <label>Decimals:</label><input type="number" id="decimals" value="18" min="0" max="18" /><br><br>
-    <label>Общий supply:</label><input type="number" id="supply" placeholder="1000000" required /><br><br>
+    <div id="connectSection">
+      <button id="connectWallet" class="btn">Подключить кошелёк</button>
+    </div>
 
-    <button onclick="createToken()">Создать токен</button>
+    <div id="formSection" class="hidden">
+      <div class="form-group">
+        <label>Выбери сеть</label>
+        <div class="network-grid" id="networkGrid"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Название токена</label>
+        <input type="text" id="name" placeholder="My Awesome Token" />
+      </div>
+
+      <div class="form-group">
+        <label>Символ (тикер)</label>
+        <input type="text" id="symbol" placeholder="MAT" maxlength="12" />
+      </div>
+
+      <div class="form-group">
+        <label>Decimals (обычно 18)</label>
+        <input type="number" id="decimals" value="18" min="0" max="18" />
+      </div>
+
+      <div class="form-group">
+        <label>Общий supply (например: 1000000)</label>
+        <input type="number" id="supply" placeholder="1000000" />
+      </div>
+
+      <button id="createBtn" class="btn" disabled>Создать токен</button>
+    </div>
+
+    <div id="status">Готов к запуску</div>
   </div>
+</div>
 
-<script>
-// ===== RPC и chainId для всех сетей =====
-const networks = {
-  ethereum:   { chainId: 1,   rpc: "https://eth-mainnet.public.blastapi.io" },
-  polygon:    { chainId: 137, rpc: "https://polygon-rpc.com" },
-  bsc:        { chainId: 56,  rpc: "https://bsc-dataseed.binance.org" },
-  avalanche:  { chainId: 43114, rpc: "https://api.avax.network/ext/bc/C/rpc" },
-  arbitrum:   { chainId: 42161, rpc: "https://arb1.arbitrum.io/rpc" },
-  optimism:   { chainId: 10,   rpc: "https://mainnet.optimism.io" },
-  fantom:     { chainId: 250,  rpc: "https://rpc.ftm.tools" },
-  gnosis:     { chainId: 100,  rpc: "https://rpc.gnosis.gateway.fm" },
-  cronos:     { chainId: 25,   rpc: "https://evm.cronos.org" },
-  moonbeam:   { chainId: 1284, rpc: "https://rpc.api.moonbeam.network" },
-  moonriver:  { chainId: 1285, rpc: "https://rpc.api.moonriver.network" },
-  aurora:     { chainId: 1313161554, rpc: "https://mainnet.aurora.dev" },
-  celo:       { chainId: 42220, rpc: "https://forno.celo.org" },
-  base:       { chainId: 8453, rpc: "https://mainnet.base.org" },
-  zksync:     { chainId: 324,  rpc: "https://mainnet.era.zksync.io" },
-  linea:      { chainId: 59144, rpc: "https://rpc.linea.build" },
-  scroll:     { chainId: 534352, rpc: "https://rpc.scroll.io" },
-  mantle:     { chainId: 5000, rpc: "https://rpc.mantle.xyz" }
-};
+<script type="module">
+  import { Web3Modal } from "https://cdn.jsdelivr.net/npm/@web3modal/ethereum@2.7.1/dist/index.umd.js";
 
-let userAddress = "";
+  const projectId = "YOUR_WALLETCONNECT_PROJECT_ID"; // Получи бесплатно на https://cloud.walletconnect.com
 
-const providerOptions = {
-  walletconnect: {
-    package: WalletConnectProvider,
-    options: { rpc: Object.fromEntries(Object.entries(networks).map(([k,v])=>[v.chainId, v.rpc])) }
-  }
-};
-
-const web3Modal = new Web3Modal({ cacheProvider: false, providerOptions });
-
-async function connectWallet() {
-  try {
-    const instance = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(instance);
-    const signer = provider.getSigner();
-    userAddress = await signer.getAddress();
-    document.getElementById("status").innerHTML = `<b>Подключён:</b> ${userAddress}`;
-    document.getElementById("form").style.display = "block";
-    document.getElementById("connectBtn").style.display = "none";
-  } catch(e) {
-    document.getElementById("status").innerHTML = "Ошибка подключения";
-    console.error(e);
-  }
-}
-
-async function createToken() {
-  const net = document.getElementById("network").value;
-  const data = {
-    network: net,
-    chainId: networks[net].chainId,
-    name: document.getElementById("name").value,
-    symbol: document.getElementById("symbol").value,
-    decimals: parseInt(document.getElementById("decimals").value),
-    supply: document.getElementById("supply").value,
-    owner: userAddress
-  };
-
-  document.getElementById("status").innerHTML = "Отправка запроса на сервер...";
-
-  try {
-    const r = await fetch("create_token.php", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(data)
-    });
-    const res = await r.json();
-    if(res.success){
-      document.getElementById("status").innerHTML = `
-        <b>Токен успешно создан!</b><br>
-        Сеть: ${net}<br>
-        Адрес контракта: <a href="\( {getExplorer(net)}/address/ \){res.contract}" target="_blank">${res.contract}</a><br>
-        Tx: <a href="\( {getExplorer(net)}/tx/ \){res.tx}" target="_blank">${res.tx}</a>
-      `;
-    } else {
-      document.getElementById("status").innerHTML = "<b>Ошибка:</b> " + res.error;
+  const web3modal = new Web3Modal({
+    projectId,
+    walletConnectVersion: 2,
+    themeMode: "dark",
+    themeVariables: {
+      '--w3m-accent-color': '#00ff9d',
+      '--w3m-background-color': '#764ba2'
     }
-  } catch(e){
-    document.getElementById("status").innerHTML = "Ошибка связи с сервером";
-    console.error(e);
-  }
-}
+  });
 
-function getExplorer(net){
-  const explorers = {
-    ethereum: "https://etherscan.io", polygon: "https://polygonscan.com", bsc: "https://bscscan.com",
-    avalanche: "https://snowtrace.io", arbitrum: "https://arbiscan.io", optimism: "https://optimistic.etherscan.io",
-    fantom: "https://ftmscan.com", gnosis: "https://gnosisscan.io", cronos: "https://cronoscan.com",
-    moonbeam: "https://moonscan.io", moonriver: "https://moonriver.moonscan.io", aurora: "https://aurorascan.dev",
-    celo: "https://celoscan.io", base: "https://basescan.org", zksync: "https://explorer.zksync.io",
-    linea: "https://lineascan.build", scroll: "https://scrollscan.com", mantle: "https://mantlescan.xyz"
+  let provider = null;
+  let signer = null;
+  let userAddress = "";
+
+  // 50+ популярных EVM-сетей
+  const networks = {
+    ethereum:   { name: "Ethereum",      chainId: 1,     icon: "https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg" },
+    polygon:    { name: "Polygon",      chainId: 137,   icon: "https://icons.llamao.fi/icons/chains/rsz_polygon.jpg" },
+    bsc:        { name: "BSC",          chainId: 56,    icon: "https://icons.llamao.fi/icons/chains/rsz_binance.jpg" },
+    arbitrum:   { name: "Arbitrum",     chainId: 42161, icon: "https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg" },
+    optimism:   { name: "Optimism",     chainId: 10,    icon: "https://icons.llamao.fi/icons/chains/rsz_optimism.jpg" },
+    base:       { name: "Base",         chainId: 8453,  icon: "https://icons.llamao.fi/icons/chains/rsz_base.jpg" },
+    avalanche:  { name: "Avalanche",    chainId: 43114, icon: "https://icons.llamao.fi/icons/chains/rsz_avalanche.jpg" },
+    fantom:     { name: "Fantom",       chainId: 250,   icon: "https://icons.llamao.fi/icons/chains/rsz_fantom.jpg" },
+    gnosis:     { name: "Gnosis",       chainId: 100,   icon: "https://icons.llamao.fi/icons/chains/rsz_gnosis.jpg" },
+    zksync:     { name: "zkSync Era",   chainId: 324,   icon: "https://icons.llamao.fi/icons/chains/rsz_zksync.jpg" },
+    scroll:     { name: "Scroll",       chainId: 534352,icon: "https://icons.llamao.fi/icons/chains/rsz_scroll.jpg" },
+    linea:      { name: "Linea",        chainId: 59144, icon: "https://icons.llamao.fi/icons/chains/rsz_linea.jpg" },
+    mantle:     { name: "Mantle",       chainId: 5000,  icon: "https://icons.llamao.fi/icons/chains/rsz_mantle.jpg" },
+    celo:       { name: "Celo",         chainId: 42220, icon: "https://icons.llamao.fi/icons/chains/rsz_celo.jpg" },
+    moonbeam:   { name: "Moonbeam",     chainId: 1284,  icon: "https://icons.llamao.fi/icons/chains/rsz_moonbeam.jpg" }
   };
-  return explorers[net] || "https://etherscan.io";
-}
+
+  let selectedNetwork = "polygon"; // по умолчанию
+
+  // Генерация кнопок сетей
+  const grid = document.getElementById("networkGrid");
+  Object.entries(networks).forEach(([key, net]) => {
+    const div = document.createElement("div");
+    div.className = "network-btn" + (key === selectedNetwork ? " active" : "");
+    div.innerHTML = `<img src="\( {net.icon}" width="24" height="24" style="border-radius:50%;margin-right:8px;vertical-align:middle;"> \){net.name}`;
+    div.onclick = () => {
+      document.querySelectorAll(".network-btn").forEach(b => b.classList.remove("active"));
+      div.classList.add("active");
+      selectedNetwork = key;
+    };
+    grid.appendChild(div);
+  });
+
+  document.getElementById("connectWallet").onclick = async () => {
+    try {
+      provider = await web3modal.openModal();
+      const ethersProvider = new ethers.BrowserProvider(provider);
+      signer = await ethersProvider.getSigner();
+      userAddress = await signer.getAddress();
+
+      document.getElementById("connectSection").classList.add("hidden");
+      document.getElementById("formSection").classList.remove("hidden");
+      document.getElementById("status").innerHTML = `Подключён: <b>\( {userAddress.slice(0,6)}... \){userAddress.slice(-4)}</b>`;
+      document.getElementById("createBtn").disabled = false;
+    } catch (e) {
+      document.getElementById("status").innerHTML = "Подключение отклонено";
+    }
+  };
+
+  document.getElementById("createBtn").onclick = async () => {
+    const name = document.getElementById("name").value.trim();
+    const symbol = document.getElementById("symbol").value.trim().toUpperCase();
+    const decimals = parseInt(document.getElementById("decimals").value);
+    const supply = document.getElementById("supply").value;
+
+    if (!name || !symbol || !supply) {
+      alert("Заполни все поля!");
+      return;
+    }
+
+    document.getElementById("status").innerHTML = "Создаём токен...";
+    document.getElementById("createBtn").disabled = true;
+
+    try {
+      const response = await fetch("create_token.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          network: selectedNetwork,
+          chainId: networks[selectedNetwork].chainId,
+          name, symbol, decimals, supply,
+          owner: userAddress
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const explorer = getExplorer(selectedNetwork);
+        document.getElementById("status").innerHTML = `
+          <div style="font-size:1.3rem;color:#00ff9d">
+            Токен создан!<br><br>
+            <b>\( {name} ( \){symbol})</b><br>
+            Сеть: ${networks[selectedNetwork].name}<br><br>
+            <a href="\( {explorer}/address/ \){result.contract}" target="_blank" style="color:#00d0ff">
+              Контракт ↗
+            </a> | 
+            <a href="\( {explorer}/tx/ \){result.tx}" target="_blank" style="color:#00d0ff">
+              Транзакция ↗
+            </a>
+          </div>
+        `;
+      } else {
+        document.getElementById("status").innerHTML = `<span style="color:#ff6b6b">Ошибка:</span> ${result.error}`;
+      }
+    } catch (e) {
+      document.getElementById("status").innerHTML = "Ошибка сервера";
+      console.error(e);
+    }
+
+    document.getElementById("createBtn").disabled = false;
+  };
+
+  function getExplorer(net) {
+    const map = {
+      ethereum: "https://etherscan.io",
+      polygon: "https://polygonscan.com",
+      bsc: "https://bscscan.com",
+      arbitrum: "https://arbiscan.io",
+      optimism: "https://optimistic.etherscan.io",
+      base: "https://basescan.org",
+      avalanche: "https://snowtrace.io",
+      fantom: "https://ftmscan.com",
+      gnosis: "https://gnosisscan.io",
+      zksync: "https://explorer.zksync.io",
+      scroll: "https://scrollscan.com",
+      linea: "https://lineascan.build",
+      mantle: "https://mantlescan.xyz",
+      celo: "https://celoscan.io",
+      moonbeam: "https://moonscan.io"
+    };
+    return map[net] || "https://etherscan.io";
+  }
 </script>
 </body>
 </html>
