@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Cryptocurrency Token</title>
+    <title>Создать криптовалюту</title>
     <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/walletconnect.min.js"></script>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://unpkg.com/web3modal@1.9.9/dist/index.js"></script>
@@ -51,14 +51,13 @@
                 package: WalletConnectProvider,
                 options: {
                     rpc: {
-                        1: "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID", // Замените на ваш Infura ID для Ethereum
+                        1: "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID", // Замените на ваш Infura ID
                         56: "https://bsc-dataseed.binance.org",
                         137: "https://polygon-rpc.com",
                         43114: "https://api.avax.network/ext/bc/C/rpc",
                         10: "https://mainnet.optimism.io"
                         // Добавьте RPC для других сетей
-                    },
-                    chainId: 1 // Начальная сеть
+                    }
                 }
             }
         };
@@ -107,7 +106,7 @@
             };
 
             try {
-                const response = await fetch('create_token.php', { // Предполагается, что у вас есть PHP-файл на сервере
+                const response = await fetch('create_token.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -124,7 +123,5 @@
             }
         }
     </script>
-
-    <p>Примечание: Этот index.html предназначен для интеграции с backend на базе репозитория https://github.com/andagaindeath3-blip/Simple-Web3-Php. Вам нужно реализовать create_token.php, используя библиотеку для развертывания ERC20-контракта в выбранной сети, с использованием серверного приватного ключа для оплаты газа, и установкой владельца на адрес пользователя. Байткод и ABI для ERC20 можно скомпилировать из стандартного кода OpenZeppelin ERC20 с Ownable.</p>
 </body>
 </html>
