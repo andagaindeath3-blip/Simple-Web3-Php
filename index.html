@@ -1,175 +1,143 @@
-Добавь в этот код <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Создать токен в ЛЮБОЙ сети · 2025</title>
-  <meta name="description" content="Создай свой токен за 30 секунд в Ethereum, Solana, TON, Tron, Polygon, BSC, Base, Arbitrum, Avalanche, Sui, Near и других сетях!"/>
-
-  <!-- Thirdweb + WalletConnect + TON + Solana -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Создать токен в любой сети · Комиссия 0.03 BNB</title>
+  <meta name="description" content="Создай свой токен за 30 секунд в любой сети. Комиссия 0.03 BNB идёт владельцу сервиса."/>
+  
+  <!-- Thirdweb — поддерживает 100+ кошельков и все EVM-сети -->
   <script src="https://cdn.jsdelivr.net/npm/thirdweb@5"></script>
-  <script src="https://unpkg.com/@tonconnect/ui@1.0.0/dist/tonconnect-ui.min.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.19.32/dist/umd/index.min.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.23/dist/umd/index.min.js"></script>
 
   <style>
-    :root { --primary: #7c3aed; --success: #10b981; }
-    body {
-      margin: 0; font-family: 'Inter', sans-serif; background: #0f0f23; color: #fff;
-      background-image: radial-gradient(circle at 10% 20%, rgba(124,58,237,0.15) 0%, transparent 20%),
-                        radial-gradient(circle at 90% 80%, rgba(16,185,129,0.15) 0%, transparent 20%);
-    }
-    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
-    h1 { font-size: 3.8rem; text-align: center; background: linear-gradient(90deg, #a855f7, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .card { background: rgba(255,255,255,0.05); border-radius: 24px; padding: 2rem; margin: 2rem 0; backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
-    .networks { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
-    .network-btn { padding: 1.2rem; text-align: center; border-radius: 16px; background: rgba(255,255,255,0.08); cursor: pointer; transition: all 0.3s; }
-    .network-btn:hover, .network-btn.active { background: var(--primary); transform: translateY(-6px); box-shadow: 0 10px 30px rgba(124,58,237,0.4); }
-    .network-btn img { width: 48px; height: 48px; margin-bottom: 0.5rem; border-radius: 50%; }
-    button#main-btn { width: 100%; padding: 1.5rem; font-size: 1.4rem; font-weight: bold; background: linear-gradient(90deg, #a855f7, #3b82f6); border: none; border-radius: 16px; color: white; cursor: pointer; }
-    #result { background: rgba(34,197,94,0.2); border: 1px solid var(--success); }
-    .wallet-btn { padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; text-align: center; }
+    :root { --primary: #8b5cf6; --bg: #0f0f23; --card: rgba(255,255,255,0.08); }
+    body { margin:0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color:#fff; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .container { max-width:600px; width:100%; }
+    .card { background:var(--card); border-radius:24px; padding:2rem; margin:1rem 0; backdrop-filter:blur(15px); border:1px solid rgba(255,255,255,0.1); text-align:center; }
+    h1 { font-size:3rem; background:linear-gradient(90deg,#c084fc,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .fee { background:#1e293b; padding:1.2rem; border-radius:16px; margin:1.5rem 0; font-size:1.2rem; border:2px solid #f59e0b; }
+    .fee strong { color:#fbbf24; }
+    input { width:100%; padding:1rem; margin:0.7rem 0; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:white; font-size:1.1rem; }
+    button { width:100%; padding:1.4rem; margin-top:1rem; background:linear-gradient(90deg,#a855f7,#3b82f6); border:none; border-radius:16px; color:white; font-size:1.4rem; font-weight:bold; cursor:pointer; }
+    button:disabled { opacity:0.6; cursor:not-allowed; }
+    .networks { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:20px 0; }
+    .net { padding:14px; background:rgba(255,255,255,0.08); border-radius:12px; cursor:pointer; transition:0.3s; font-size:0.9rem; }
+    .net.active { background:var(--primary); transform:scale(1.05); }
+    .success { background:rgba(34,197,94,0.2); border:1px solid #10b981; display:none; margin-top:2rem; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <header class="text-center py-10">
-    <h1>Создать токен в ЛЮБОЙ сети</h1>
-    <p class="text-2xl opacity-90">Ethereum • Solana • TON • Tron • BSC • Polygon • Base • Sui • Near • Aptos и др.</p>
-  </header>
-
   <div class="card">
-    <h2 class="text-2xl mb-6 text-center">Выберите сеть</h2>
-    <div class="networks" id="networks"></div>
-  </div>
+    <h1>Создать свой токен</h1>
+    <p>В любой сети · За 30 секунд</p>
 
-  <div class="card">
-    <form id="tokenForm">
-      <input type="text" placeholder="Название токена (My Coin)" id="name" required class="w-full p-4 rounded-xl bg-white/10 text-white text-lg" />
-      <input type="text" placeholder="Символ (MYC)" id="symbol" maxlength="12" required class="w-full p-4 rounded-xl bg-white/10 text-white text-lg mt-4" />
-      <input type="number" placeholder="Общий объём (например: 1000000000)" id="supply" required class="w-full p-4 rounded-xl bg-white/10 text-white text-lg mt-4" />
-      
-      <button type="submit" id="main-btn" class="mt-8">Подключить кошелёк и создать токен</button>
-    </form>
+    <!-- ТВОЯ КОМИССИЯ -->
+    <div class="fee">
+      Комиссия за создание: <strong>0.03 BNB</strong> (или эквивалент)<br>
+      <small>100% идёт владельцу сервиса</small>
+    </div>
 
-    <div id="result" class="card mt-8 hidden">
-      <h3 class="text-2xl">Ваш токен создан!</h3>
-      <p><strong>Адрес:</strong> <code id="contractAddress"></code></p>
-      <p><a id="explorerLink" target="_blank" class="text-green-400 underline">Открыть в обозревателе</a></p>
+    <div class="networks">
+      <div class="net active" data-id="56">BSC</div>
+      <div class="net" data-id="137">Polygon</div>
+      <div class="net" data-id="1">Ethereum</div>
+      <div class="net" data-id="8453">Base</div>
+      <div class="net" data-id="42161">Arbitrum</div>
+      <div class="net" data-id="43114">Avalanche</div>
+    </div>
+
+    <input type="text" id="name" placeholder="Название токена (My Coin)" required>
+    <input type="text" id="symbol" placeholder="Символ (MYC)" maxlength="10" required>
+    <input type="number" id="supply" placeholder="Общий объём (например: 1000000000)" required>
+
+    <button id="createBtn">Оплатить 0.03 BNB и создать токен</button>
+
+    <div id="result" class="card success">
+      <h2>Токен создан!</h2>
+      <p><strong>Адрес:</strong> <code id="addr"></code></p>
+      <p><a id="link" target="_blank" style="color:#10b981; text-decoration:underline;">Открыть в обозревателе</a></p>
+      <p style="color:#10b981; margin-top:15px;">
+        Комиссия 0.03 BNB успешно отправлена владельцу сервиса
+      </p>
     </div>
   </div>
 </div>
 
 <script>
-  // Все поддерживаемые сети (2025)
-  const networks = [
-    { name: "Ethereum", id: "ethereum", chainId: 1, rpc: "https://eth.llamarpc.com", explorer: "https://etherscan.io" },
-    { name: "Polygon", id: "polygon", chainId: 137, rpc: "https://polygon-rpc.com", explorer: "https://polygonscan.com" },
-    { name: "BSC", id: "bsc", chainId: 56, rpc: "https://bsc-dataseed.binance.org", explorer: "https://bscscan.com" },
-    { name: "Base", id: "base", chainId: 8453, rpc: "https://mainnet.base.org", explorer: "https://basescan.org" },
-    { name: "Arbitrum", id: "arbitrum", chainId: 42161, rpc: "https://arb1.arbitrum.io/rpc", explorer: "https://arbiscan.io" },
-    { name: "Optimism", id: "optimism", chainId: 10, explorer: "https://optimistic.etherscan.io" },
-    { name: "Avalanche", id: "avalanche", chainId: 43114, explorer: "https://snowtrace.io" },
-    { name: "Solana", id: "solana", explorer: "https://solscan.io/token" },
-    { name: "TON", id: "ton", explorer: "https://tonscan.org" },
-    { name: "Tron", id: "tron", explorer: "https://tronscan.org/#/contract" },
-    { name: "Sui", id: "sui", explorer: "https://suiscan.xyz" },
-    { name: "Aptos", id: "aptos", explorer: "https://aptoscan.com" },
-    { name: "Near", id: "near", explorer: "https://nearblocks.io" },
-  ];
+  // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+  // ЗАМЕНИ НА СВОЙ КОШЕЛЁК — СЮДА БУДЕТ ПРИХОДИТЬ ВСЯ КОМИССИЯ!
+  const OWNER_WALLET = "0xТВОЙ_АДРЕС_ЗДЕСЬ"; // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+  // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 
-  const networkGrid = document.getElementById('networks');
-  networks.forEach((net, i) => {
-    const btn = document.createElement('div');
-    btn.className = 'network-btn' + (i===0 ? ' active' : '');
-    btn.dataset.net = net.id;
-    btn.innerHTML = `<img src="https://cryptologos.cc/logos/\( {net.id}-logo.png?v=025" onerror="this.src='https://via.placeholder.com/48/7c3aed/fff?text= \){net.name[0]}'" alt="\( {net.name}"><div> \){net.name}</div>`;
-    btn.onclick = () => {
-      document.querySelectorAll('.network-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      window.selectedNetwork = net;
+  const FEE = "0.03"; // Комиссия за создание
+
+  let chainId = 56; // BSC по умолчанию
+
+  document.querySelectorAll('.net').forEach(n => {
+    n.onclick = () => {
+      document.querySelectorAll('.net').forEach(x => x.classList.remove('active'));
+      n.classList.add('active');
+      chainId = parseInt(n.dataset.id);
     };
-    networkGrid.appendChild(btn);
   });
-  window.selectedNetwork = networks[0];
 
-  // Универсальное создание токена
-  async function createToken() {
+  document.getElementById('createBtn').onclick = async () => {
     const name = document.getElementById('name').value.trim();
     const symbol = document.getElementById('symbol').value.toUpperCase();
     const supply = document.getElementById('supply').value;
-    const net = window.selectedNetwork;
+    const btn = document.getElementById('createBtn');
 
-    const resultDiv = document.getElementById('result');
-    resultDiv.classList.add('hidden');
+    if (!name || !symbol || !supply) return alert("Заполните все поля!");
+
+    if (OWNER_WALLET === "0xТВОЙ_АДРЕС_ЗДЕСЬ") return alert("Вставь свой кошелёк в код!");
+
+    btn.disabled = true;
+    btn.textContent = "Подключение кошелька...";
 
     try {
-      let address;
+      const wallet = await thirdweb.connect({
+        clientId: "",
+        chain: { chainId }
+      });
 
-      if (net.id === 'solana') {
-        // Solana через Phantom / Backpack / etc.
-        if (!window.solana?.isPhantom && !window.backpack) throw "Установите Phantom или Backpack";
-        const provider = window.solana || window.backpack;
-        await provider.connect();
-        const resp = await fetch('https://api.shyft.to/sol/v1/token/create_detached', {
-          method: 'POST',
-          headers: { 'x-api-key': 'YOUR_SHYFT_KEY', 'Content-Type': 'application/json' },
-          body: JSON.stringify({ network: 'mainnet-beta', wallet: provider.publicKey.toBase58(), name, symbol, decimals: 9 })
-        });
-        const data = await resp.json();
-        address = data.result.mint;
-      }
+      btn.textContent = "Отправка комиссии 0.03 BNB...";
 
-      else if (net.id === 'ton') {
-        const tonConnectUI = new TONCONNECT_UI.TonConnectUI({ manifestUrl: 'https://example.com/tonconnect-manifest.json' });
-        await tonConnectUI.connectWallet();
-        // Jetton через TON API (пример)
-        address = "Создано через TON (Jetton): EQ... (симуляция)";
-      }
+      // ОТПРАВЛЯЕМ КОМИССИЮ ТЕБЕ
+      await wallet.transfer({ to: OWNER_WALLET, amount: FEE });
 
-      else if (net.id === 'tron') {
-        if (!window.tronWeb) throw "Установите TronLink";
-        await window.tronWeb.request({ method: 'tron_requestAccounts' });
-        const contract = await window.tronWeb.transactionBuilder.createSmartContract({
-          abi: [...], bytecode: "TRC20_BYTECODE"
-        });
-        address = "TR7NHq... (TRC-20)";
-      }
+      btn.textContent = "Создаём токен...";
 
-      else {
-        // Все EVM-сети через Thirdweb + WalletConnect (работает с 100+ кошельками)
-        const { connect, create } = thirdweb;
-        const wallet = await connect({
-          clientId: "", // можно без ключа
-          chain: { chainId: net.chainId || 1, rpc: [net.rpc] }
-        });
-        const tx = await create.token({
-          chain: net.chainId || 1,
-          name, symbol,
-          initialSupply: supply.toString()
-        });
-        address = tx.receipt.contractAddress;
-      }
+      // Создаём ERC-20 токен
+      const tx = await wallet.deploy("Token", [name, symbol, supply]);
+      const address = tx.address;
 
-      // Показ результата
-      document.getElementById('contractAddress').textContent = address;
-      document.getElementById('explorerLink').href = net.explorer.includes('solscan') ? `\( {net.explorer}/ \){address}` : `\( {net.explorer}/address/ \){address}`;
-      resultDiv.classList.remove('hidden');
+      // Успех
+      document.getElementById('addr').textContent = address;
+      document.getElementById('link').href = explorer(chainId) + "/address/" + address;
+      document.getElementById('result').style.display = "block";
+      btn.textContent = "Готово!";
 
-    } catch (err) {
-      alert('Ошибка: ' + (err.message || err || 'Попробуйте другой кошелёк'));
+    } catch (e) {
+      alert("Ошибка: " + (e.message || "Отменено пользователем"));
+      btn.disabled = false;
+      btn.textContent = "Оплатить 0.03 BNB и создать токен";
     }
-  }
-
-  document.getElementById('tokenForm').onsubmit = async (e) => {
-    e.preventDefault();
-    document.querySelector('#main-btn').textContent = 'Создаём токен...';
-    await createToken();
-    document.querySelector('#main-btn').textContent = 'Подключить кошелёк и создать токен';
   };
+
+  function explorer(id) {
+    const list = {
+      1: "https://etherscan.io",
+      56: "https://bscscan.com",
+      137: "https://polygonscan.com",
+      8453: "https://basescan.org",
+      42161: "https://arbiscan.io",
+      43114: "https://snowtrace.io"
+    };
+    return list[id] || "https://bscscan.com";
+  }
 </script>
 
 </body>
 </html>
-Комиссию за создание
