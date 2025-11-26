@@ -1,263 +1,82 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Token Forge Pro — Создай токен с налогами и LP</title>
-  <script src="https://cdn.ethers.gg/v6/ethers.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #00ff9d;
-      --secondary: #ff00aa;
-      --bg: #0d0b1c;
-      --card: #1a1733;
-      --accent: #7b2fff;
-    }
-    body {
-      margin: 0;
-      padding: 0;
-      background: var(--bg);
-      color: white;
-      font-family: 'Roboto Mono', monospace;
-      min-height: 100vh;
-      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%230d0b1c"/><path d="M0 50 L100 50 M50 0 L50 100" stroke="%23221e40" stroke-width="1"/></svg>');
-    }
-    .container {
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 20px;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    .header h1 {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 3.5rem;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .card {
-      background: var(--card);
-      border-radius: 20px;
-      padding: 30px;
-      margin-bottom: 25px;
-      border: 1px solid rgba(0,255,157,0.2);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 14px;
-      margin: 10px 0;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(0,255,157,0.3);
-      border-radius: 10px;
-      color: white;
-      font-size: 1rem;
-    }
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 15px rgba(0,255,157,0.4);
-    }
-    button {
-      padding: 16px 32px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.3s;
-      background: linear-gradient(45deg, var(--primary), #00ff6a);
-      color: black;
-    }
-    button:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,255,157,0.4); }
-    button:disabled { background: #444; cursor: not-allowed; transform: none; }
-    .status {
-      margin-top: 20px;
-      padding: 20px;
-      border-radius: 12px;
-      background: rgba(0,0,0,0.4);
-      min-height: 80px;
-      font-size: 1.1rem;
-      word-break: break-all;
-    }
-    .success { border-left: 5px solid var(--primary); }
-    .error   { border-left: 5px solid #ff0066; }
-    .tx-link { color: var(--primary); text-decoration: underline; }
-    .features {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin: 20px 0;
-    }
-    .feature {
-      background: rgba(123,47,255,0.2);
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRYPTO CREATOR 2026 — Создай токен с Simple-Web3-Php</title>
+    <meta name="description" content="Деплой ERC-20 токена в любой EVM-сети через PHP. Интеграция с Simple-Web3-Php.">
+    <style>
+        body { font-family: Arial, sans-serif; background: #0a0a0a; color: #fff; padding: 20px; text-align: center; }
+        form { max-width: 500px; margin: 0 auto; background: #1a1a1a; padding: 30px; border-radius: 10px; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 5px; }
+        button { background: #00ff88; color: #000; font-weight: bold; cursor: pointer; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+        .success { background: #00ff88; color: #000; }
+        .error { background: #ff4444; }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>Token Forge Pro</h1>
-      <p>Создай токен с налогами, анти-ботом и автоматическим LP</p>
-    </div>
+    <h1>CRYPTO CREATOR</h1>
+    <p>Создай ERC-20 токен в любой сети через Simple-Web3-Php</p>
 
-    <div class="card">
-      <button id="connectBtn">Подключить MetaMask</button>
-      <div id="account" style="margin-top:15px; font-weight:bold;"></div>
-    </div>
+    <form id="tokenForm">
+        <select id="network" required>
+            <option value="ethereum">Ethereum Mainnet</option>
+            <option value="bsc">BNB Smart Chain</option>
+            <option value="polygon">Polygon</option>
+            <option value="arbitrum">Arbitrum</option>
+            <!-- Добавьте больше -->
+        </select>
+        
+        <input type="number" id="supply" placeholder="Initial Supply (e.g., 1000000)" required min="1">
+        
+        <input type="text" id="address" placeholder="Your Wallet Address (0x...)" required>
+        
+        <input type="password" id="privateKey" placeholder="Private Key (0x... — ТЕСТ!)" required>
+        
+        <button type="submit">Создать токен</button>
+    </form>
 
-    <div id="mainForm" style="display:none;">
-      <div class="card">
-        <h2>Основные параметры</h2>
-        <div class="grid">
-          <input type="text" id="name" placeholder="Название токена (My Super Token)" />
-          <input type="text" id="symbol" placeholder="Символ (MST)" maxlength="12" />
-          <input type="number" id="supply" placeholder="Общий выпуск (например: 1000000)" />
-          <select id="decimals">
-            <option value="18">18 (как ETH, BNB)</option>
-            <option value="9">9 (как большинство мемкоинов)</option>
-            <option value="6">6 (как USDT, USDC)</option>
-          </select>
-        </div>
-      </div>
+    <div id="result"></div>
 
-      <div class="card">
-        <h2>Налоги (Tax) — опционально</h2>
-        <div class="grid">
-          <input type="number" id="taxBuy" placeholder="Налог на покупку (%)" min="0" max="20" step="0.1" value="0"/>
-          <input type="number" id="taxSell" placeholder="Налог на продажу (%)" min="0" max="20" step="0.1" value="0"/>
-          <input type="text" id="taxWallet" placeholder="Кошелёк для налогов (0x...)" />
-        </div>
-        <small>Оставьте 0%, если не нужны налоги</small>
-      </div>
-
-      <div class="card">
-        <h2>Дополнительные функции</h2>
-        <div class="features">
-          <label><input type="checkbox" id="antiBot" checked> Анти-бот (блокировка снайперов 5 мин)</label>
-          <label><input type="checkbox" id="renounced" checked> Отказ от владения (Renounced Ownership)</label>
-          <label><input type="checkbox" id="autoLp" checked> Автоматическая заливка LP на Uniswap</label>
-          <label><input type="number" id="lpPercent" placeholder="% токенов в LP" value="90" />%</label>
-        </div>
-      </div>
-
-      <div class="card">
-        <button id="createBtn">Создать токен прямо сейчас!</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="status" id="status">Подключите кошелёк для начала...</div>
-    </div>
-  </div>
-
-<script>
-  const connectBtn = document.getElementById('connectBtn');
-  const createBtn = document.getElementById('createBtn');
-  const status = document.getElementById('status');
-  const accountDiv = document.getElementById('account');
-  const mainForm = document.getElementById('mainForm');
-
-  let signer, provider, userAddress;
-
-  // Поддерживаемые сети
-  const networks = {
-    1: "Ethereum Mainnet",
-    11155111: "Sepolia Testnet",
-    56: "BNB Chain",
-    137: "Polygon",
-    43114: "Avalanche",
-    8453: "Base",
-    10: "Optimism",
-    42161: "Arbitrum"
-  };
-
-  connectBtn.onclick = async () => {
-    if (!window.ethereum) return alert("Установите MetaMask!");
-    
-    try {
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      provider = new ethers.BrowserProvider(window.ethereum);
-      signer = await provider.getSigner();
-      userAddress = await signer.getAddress();
-
-      const { chainId } = await provider.getNetwork();
-      const networkName = networks[chainId] || `Chain ID: ${chainId}`;
-
-      accountDiv.innerHTML = `Подключено: <b>\( {userAddress.slice(0,8)}... \){userAddress.slice(-6)}</b><br>
-                              Сеть: <b>${networkName}</b>`;
-      connectBtn.style.display = 'none';
-      mainForm.style.display = 'block';
-      updateStatus("Кошелёк подключён! Заполните параметры токена.", "success");
-    } catch (e) {
-      updateStatus("Ошибка подключения: " + e.message, "error");
-    }
-  };
-
-  createBtn.onclick = async () => {
-    const name = document.getElementById('name').value.trim();
-    const symbol = document.getElementById('symbol').value.trim().toUpperCase();
-    const supply = document.getElementById('supply').value;
-    const decimals = document.getElementById('decimals').value;
-    const taxBuy = parseFloat(document.getElementById('taxBuy').value) || 0;
-    const taxSell = parseFloat(document.getElementById('taxSell').value) || 0;
-    const taxWallet = document.getElementById('taxWallet').value.trim() || ethers.ZeroAddress;
-    const antiBot = document.getElementById('antiBot').checked;
-    const renounced = document.getElementById('renounced').checked;
-    const autoLp = document.getElementById('autoLp').checked;
-    const lpPercent = parseInt(document.getElementById('lpPercent').value) || 90;
-
-    if (!name || !symbol || !supply) {
-      return updateStatus("Заполните все основные поля!", "error");
-    }
-
-    updateStatus("Готовим контракт... Подтвердите транзакцию в MetaMask", "success");
-    createBtn.disabled = true;
-
-    try {
-      // Здесь используется реальный продвинутый bytecode (с налогами, антиботом и т.д.)
-      // В реальном проекте — подгружать .bin + .abi с GitHub или IPFS
-      const bytecode = "608060405234801561001057600080fd5b50611000000000000000000000000000000000000000000000000000000000"; // Упрощённый пример
-      // ВАЖНО: Для полноценного tax + anti-bot используйте готовые шаблоны от PinkSale, DXSale или мой репозиторий:
-      // https://github.com/denull/token-forge-pro (там полный .sol с налогами и LP)
-
-      const factory = new ethers.ContractFactory([], bytecode, signer);
-      const totalSupply = ethers.parseUnits(supply, decimals);
-
-      const contract = await factory.deploy(name, symbol, totalSupply);
-      updateStatus(`Создаём токен... Хэш: <a class="tx-link" href="https://etherscan.io/tx/\( {contract.deploymentTransaction().hash}" target="_blank"> \){contract.deploymentTransaction().hash}</a>`);
-
-      await contract.waitForDeployment();
-      const address = await contract.getAddress();
-
-      updateStatus(`Токен успешно создан! 
-        <br>Адрес: <a class="tx-link" href="https://etherscan.io/address/\( {address}" target="_blank"> \){address}</a>
-        <br>Готово! Теперь можно добавить в MetaMask и залить LP.`, "success");
-
-    } catch (err) {
-      updateStatus("Ошибка создания: " + (err.message || err), "error");
-    } finally {
-      createBtn.disabled = false;
-    }
-  };
-
-  function updateStatus(msg, type = "") {
-    status.innerHTML = msg;
-    status.className = "status";
-    if (type) status.classList.add(type);
-  }
-</script>
+    <script>
+        document.getElementById('tokenForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                network: document.getElementById('network').value,
+                supply: document.getElementById('supply').value,
+                address: document.getElementById('address').value,
+                privateKey: document.getElementById('privateKey').value
+            };
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Создаём токен...';
+            resultDiv.className = '';
+            
+            try {
+                const res = await fetch('/api/create.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <h3>✅ Успех!</h3>
+                        <p>Tx Hash: <a href="\( {data.explorer}" target="_blank"> \){data.txHash}</a></p>
+                        <p>Contract Address: ${data.contractAddress}</p>
+                    `;
+                    resultDiv.className = 'success';
+                } else {
+                    resultDiv.innerHTML = `<h3>❌ Ошибка: ${data.error}</h3>`;
+                    resultDiv.className = 'error';
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<h3>❌ Network Error: ${err.message}</h3>`;
+                resultDiv.className = 'error';
+            }
+        });
+    </script>
 </body>
 </html>
